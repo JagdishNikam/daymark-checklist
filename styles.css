@@ -114,3 +114,30 @@ body:not(.dark) .card{background:linear-gradient(145deg,#fffdfa,#f7f3ec)}
 .matrix-state.not-scheduled .status-glyph{color:#160d00;background:#ffad32;border-radius:50%;box-shadow:0 3px 0 #030201,0 0 14px rgba(255,173,50,.24)}
 .matrix-state .na-mark{font:900 7px/1 "Manrope",sans-serif;letter-spacing:-.35px}
 .today-actions{margin-top:0}
+
+/* Midnight glass theme inspired by the supplied reference */
+:root{--bg:#06101d;--bg-soft:#0a1524;--panel:rgba(19,29,43,.62);--panel-2:rgba(30,41,57,.58);--panel-3:rgba(40,52,69,.58);--line:rgba(210,225,242,.16);--line-strong:rgba(225,237,250,.3);--text:#f5f7fb;--muted:#aab5c5;--muted-2:#748198;--shadow:0 25px 70px rgba(0,0,0,.38),inset 0 1px rgba(255,255,255,.08)}
+body{background:#06101d}
+.ambient-bg{background:radial-gradient(circle at 75% 4%,rgba(34,71,111,.55),transparent 32%),radial-gradient(circle at 18% 85%,rgba(127,89,46,.22),transparent 34%),linear-gradient(155deg,#071525 0%,#07101b 48%,#12171c 100%)}
+.ambient-bg span:nth-child(1){right:-170px;top:-80px;background:radial-gradient(circle,rgba(82,133,188,.32),transparent 67%)}
+.ambient-bg span:nth-child(2){left:-80px;bottom:-250px;background:radial-gradient(circle,rgba(215,160,88,.17),transparent 68%)}
+.ambient-bg span:nth-child(3){background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:64px 64px;opacity:.42}
+.sidebar,.mobile-bar,.mobile-nav{background:linear-gradient(155deg,rgba(22,31,44,.79),rgba(8,14,23,.69));border-color:rgba(223,234,247,.16);box-shadow:inset 0 1px rgba(255,255,255,.08),12px 0 45px rgba(0,0,0,.24);backdrop-filter:blur(26px) saturate(135%)}
+.card,.visual-header,.date-switcher,.daily-action-card,.sidebar-cycle{border-color:rgba(224,235,248,.19);background:linear-gradient(145deg,rgba(42,53,69,.68),rgba(14,22,34,.58));box-shadow:0 24px 60px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.1),inset 1px 0 rgba(255,255,255,.035);backdrop-filter:blur(22px) saturate(130%)}
+.visual-header{background:radial-gradient(circle at 86% 8%,rgba(130,164,199,.18),transparent 31%),linear-gradient(140deg,rgba(43,57,78,.7),rgba(12,22,36,.55));border-color:rgba(226,237,249,.22)}
+.visual-header::after{border-color:rgba(220,232,246,.055)}
+.improvement-board{position:relative;background:linear-gradient(145deg,rgba(31,43,60,.68),rgba(10,18,30,.62))}
+.action-matrix{border-color:rgba(225,236,248,.18);box-shadow:inset 0 1px rgba(255,255,255,.055)}
+.matrix-corner,.matrix-day,.matrix-action{background:rgba(11,19,31,.72)}
+.matrix-action{box-shadow:inset 0 1px rgba(255,255,255,.025)}
+.matrix-state,.matrix-state.completed,.matrix-state.missed,.matrix-state.not-scheduled,.matrix-state.partial{background:rgba(18,28,43,.62)}
+.matrix-day.today{background:linear-gradient(180deg,rgba(98,143,187,.2),rgba(26,48,72,.3));color:#b8defd}
+.action-symbol,.daily-action-icon{background:linear-gradient(145deg,rgba(113,142,174,.22),rgba(45,66,91,.22));border:1px solid rgba(222,235,249,.1);color:#c6d8ec;box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.matrix-state .status-glyph,.matrix-state.completed .status-glyph,.matrix-state.missed .status-glyph,.matrix-state.not-scheduled .status-glyph{background:linear-gradient(145deg,#202a38,#0c1119);border-color:#020406;box-shadow:0 3px 0 #010203,inset 0 1px rgba(255,255,255,.12),0 0 0 1px rgba(255,255,255,.04)}
+.matrix-state.completed .status-glyph{color:#35e69e}.matrix-state.missed .status-glyph{color:#ff6476}.matrix-state.not-scheduled .status-glyph{color:#ffb13c}
+.legend-dot.completed{background:#35e69e}.legend-dot.missed{background:#ff6476}.legend-dot.na{background:#ffb13c}
+.main-nav .nav-item.active{border:1px solid rgba(222,235,249,.16);background:linear-gradient(145deg,rgba(104,129,158,.25),rgba(28,42,61,.38));color:#f7fbff;box-shadow:inset 0 1px rgba(255,255,255,.1),0 12px 30px rgba(0,0,0,.22)}
+.date-switcher{background:linear-gradient(145deg,rgba(38,50,67,.66),rgba(13,21,33,.6))}.date-switcher button{border:1px solid rgba(224,235,248,.14);background:linear-gradient(145deg,rgba(83,103,128,.25),rgba(24,35,50,.45));box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.daily-action-card{background:linear-gradient(145deg,rgba(39,51,68,.64),rgba(12,20,32,.62))}.daily-action-card.completed{background:linear-gradient(145deg,rgba(31,72,66,.55),rgba(12,27,30,.64))}.daily-action-card.missed{background:linear-gradient(145deg,rgba(69,35,45,.47),rgba(23,22,31,.65))}.daily-action-card.not-scheduled{background:linear-gradient(145deg,rgba(69,57,35,.43),rgba(22,24,30,.65))}
+.action-status-select{border-color:rgba(222,235,249,.19);background:rgba(9,16,26,.72)}
+@supports not (backdrop-filter:blur(1px)){.card,.visual-header,.date-switcher,.daily-action-card,.sidebar,.mobile-bar,.mobile-nav{background-color:#121d2c}}
