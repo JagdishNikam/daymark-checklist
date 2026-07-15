@@ -1,0 +1,10 @@
+{
+  "name": "daymark-checklist",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node model.test.mjs",
+    "check": "node --check app.js && node --check model.js && node --check storage.js && node --check icons.js && node --check service-worker.js"
+  }
+}

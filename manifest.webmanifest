@@ -1,11 +1,11 @@
 {
-  "name": "Daymark — Daily & Weekly Checklist",
+  "name": "Daymark — 28 Day Improvement Tracker",
   "short_name": "Daymark",
-  "description": "A calm daily and weekly checklist.",
+  "description": "A private 28-day habit, routine, weight, and consistency tracker.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4f2ff",
-  "theme_color": "#f4f2ff",
+  "background_color": "#090b0e",
+  "theme_color": "#090b0e",
   "icons": [
     { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
