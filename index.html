@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f7f8f3" />
+    <meta name="theme-color" content="#f3efe6" />
     <meta name="description" content="A calm daily and weekly checklist." />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
@@ -75,6 +75,35 @@
               <textarea id="dailyNote" rows="2" maxlength="180" placeholder="What would make today feel meaningful?"></textarea>
             </div>
           </section>
+
+          <aside class="today-insights" aria-label="Today at a glance">
+            <section class="insight-card focus-card">
+              <div class="insight-card-topline">
+                <span class="live-dot"></span>
+                <span>Today at a glance</span>
+              </div>
+              <h2>Make space for what matters.</h2>
+              <p>Momentum comes from finishing the next small thing—not the whole week at once.</p>
+              <div class="insight-stats">
+                <div><strong id="completedCount">0</strong><span>Completed</span></div>
+                <div><strong id="remainingCount">0</strong><span>Remaining</span></div>
+              </div>
+            </section>
+
+            <section class="insight-card next-card">
+              <p class="eyebrow">UP NEXT</p>
+              <div class="next-task-icon" id="nextTaskIcon">✦</div>
+              <div>
+                <h3 id="nextTaskName">Your day is clear</h3>
+                <p id="nextTaskMeta">Take a moment to reset.</p>
+              </div>
+            </section>
+
+            <section class="quote-card">
+              <span aria-hidden="true">“</span>
+              <p>Direction matters more than speed.</p>
+            </section>
+          </aside>
         </section>
 
         <section class="view" id="weeklyView" aria-labelledby="weeklyTitle">

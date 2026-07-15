@@ -58,8 +58,8 @@ function completionRate(date) {
 
 function render() {
   document.body.classList.toggle("dark", !!state.dark);
-  document.querySelector('meta[name="theme-color"]').content = state.dark ? "#11101d" : "#f4f2ff";
-  renderHeader(); renderWeekStrip(); renderTasks(); renderWeekly(); renderProgress(); renderSettings();
+  document.querySelector('meta[name="theme-color"]').content = state.dark ? "#17201c" : "#f3efe6";
+  renderHeader(); renderWeekStrip(); renderTasks(); renderInsights(); renderWeekly(); renderProgress(); renderSettings();
 }
 
 function renderHeader() {
@@ -100,6 +100,20 @@ function renderTasks() {
   const tasks=tasksForDate(selectedDate).filter(t=>currentFilter==="all"||t.category===currentFilter);
   tasks.sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99")); tasks.forEach(t=>list.appendChild(taskCard(t,selectedDate)));
   document.getElementById("emptyState").hidden=tasks.length>0;
+}
+
+function renderInsights() {
+  const tasks = tasksForDate(selectedDate).sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  const completed = completedFor(selectedDate);
+  const doneCount = tasks.filter(task => completed.includes(task.id)).length;
+  const nextTask = tasks.find(task => !completed.includes(task.id));
+  document.getElementById("completedCount").textContent = doneCount;
+  document.getElementById("remainingCount").textContent = Math.max(tasks.length - doneCount, 0);
+  document.getElementById("nextTaskIcon").textContent = nextTask?.icon || "✓";
+  document.getElementById("nextTaskName").textContent = nextTask?.name || "Your day is clear";
+  document.getElementById("nextTaskMeta").textContent = nextTask
+    ? `${formatTime(nextTask.time)} · ${categoryNames[nextTask.category]}`
+    : "Take a moment to reset.";
 }
 
 function toggleTask(id,date) {
