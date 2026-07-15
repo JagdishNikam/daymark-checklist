@@ -1,4 +1,4 @@
-const CACHE = "daymark-v5-28-day";
+const CACHE = "daymark-v6-dark-theme";
 const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./model.js", "./storage.js", "./icons.js", "./manifest.webmanifest", "./icons/icon.svg"];
 
 self.addEventListener("install", event => {

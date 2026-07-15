@@ -45,12 +45,14 @@ function migrateLegacy(base, legacy) {
 function normalize(raw) {
   const initial=createInitialState();
   if(!raw || raw.version !== 3) return initial;
-  return {
+  const normalized = {
     ...initial, ...raw,
     settings:{...initial.settings,...raw.settings},
     habits:Array.isArray(raw.habits) ? raw.habits : initial.habits,
     entries:raw.entries || {}, weights:raw.weights || {}, dayNotes:raw.dayNotes || {}, oneTimeTasks:raw.oneTimeTasks || []
   };
+  normalized.settings.theme="dark";
+  return normalized;
 }
 
 export class DaymarkStore {

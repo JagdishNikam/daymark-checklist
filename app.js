@@ -49,9 +49,8 @@ function render(){
 }
 
 function applyTheme(){
-  const dark=state.settings.theme!=="light";
-  document.body.classList.toggle("dark",dark);
-  document.querySelector('meta[name="theme-color"]').content=dark?"#090b0e":"#f4f1eb";
+  document.body.classList.add("dark");
+  document.querySelector('meta[name="theme-color"]').content="#090b0e";
 }
 
 function renderSidebar(){
@@ -201,7 +200,7 @@ function renderSettings(){
       <section class="card settings-section"><header><h2>Profile & cycle</h2><p>Your greeting and deterministic cycle anchor.</p></header><div class="setting-list">
         <label class="setting-row"><span><strong>Your name</strong><small>Used in the greeting</small></span><input type="text" maxlength="30" data-setting="name" value="${escapeHtml(state.settings.name)}" placeholder="Your name"/></label>
         <label class="setting-row"><span><strong>Cycle start date</strong><small>Each cycle repeats every 28 days</small></span><input type="date" data-setting="cycleAnchor" value="${state.settings.cycleAnchor}"/></label>
-        <label class="setting-row"><span><strong>Theme</strong><small>High-contrast dark or light</small></span><select data-setting="theme"><option value="dark" ${state.settings.theme!=="light"?"selected":""}>Dark</option><option value="light" ${state.settings.theme==="light"?"selected":""}>Light</option></select></label>
+        <div class="setting-row"><span><strong>Theme</strong><small>Premium charcoal dark theme</small></span><span class="chip accent">Dark</span></div>
       </div></section>
       <section class="card settings-section"><header><h2>Weight goals</h2><p>Measurements stay separate from habit scoring.</p></header><div class="setting-list">
         <label class="setting-row"><span><strong>Starting weight</strong><small>kg at the beginning</small></span><input type="number" min="20" max="400" step="0.1" data-setting-number="startingWeight" value="${state.settings.startingWeight??""}" placeholder="kg"/></label>
