@@ -10,15 +10,18 @@ export const DEFAULT_HABITS = [
     { id:"parvati-gajra", name:"Gajra offered to Goddess Parvati" }
   ]},
   { id:"black-coffee", name:"Drink black coffee", category:"morning", icon:"coffee", schedule:[1,2,3,4,5,6], time:"07:15", points:3, type:"boolean", active:true },
+  { id:"orange", name:"Eat an orange", category:"nutrition", icon:"orange", schedule:[1,2,3,4,5,6], time:"06:45", points:4, type:"boolean", active:true },
   { id:"workout", name:"Gym / workout", category:"fitness", icon:"dumbbell", schedule:[1,2,3,4,5,6], time:"07:30", points:15, type:"boolean", active:true },
+  { id:"back-physio", name:"Back physiotherapy", category:"fitness", icon:"physio", schedule:[1,2,3,4,5,6], time:"08:15", points:8, type:"boolean", active:true },
   { id:"soya-rice", name:"Post-workout soya chunks rice", category:"nutrition", icon:"bowl", schedule:[1,2,3,4,5,6], time:"09:00", points:7, type:"boolean", active:true, editableDescription:true },
   { id:"protein-lunch", name:"Protein-focused lunch", description:"Paneer bhurji and bhakri", category:"nutrition", icon:"utensils", schedule:[1,2,3,4,5,6], time:"13:00", points:7, type:"boolean", active:true, editableDescription:true },
   { id:"protein-goal", name:"Daily protein / nutrition goal", category:"nutrition", icon:"nutrition", schedule:[1,2,3,4,5,6], time:"20:00", points:8, type:"boolean", active:true, editableDescription:true },
   { id:"kegel", name:"Kegel Exercise", category:"wellness", icon:"activity", schedule:[1,2,3,4,5,6], points:9, type:"subtasks", active:true, subtasks:[
-    { id:"morning", name:"Morning session" },
-    { id:"afternoon", name:"Afternoon session" },
-    { id:"evening", name:"Evening session" }
+    { id:"morning", name:"Kegel 1" },
+    { id:"evening", name:"Kegel 2" }
   ]},
+  { id:"avla-drink", name:"Amla drink", category:"nutrition", icon:"leaf", schedule:[1,2,3,4,5,6], time:"11:00", points:4, type:"boolean", active:true },
+  { id:"beetroot-juice", name:"Beetroot juice", category:"nutrition", icon:"drop", schedule:[1,2,3,4,5,6], time:"16:30", points:4, type:"boolean", active:true },
   { id:"learning", name:"One hour of self-learning", category:"learning", icon:"book", schedule:[1,2,3,4,5], time:"19:00", points:15, type:"learning", active:true },
   { id:"dev-puja", name:"Dev Puja at home", category:"spiritual", icon:"spark", schedule:[1,2,3,4,5,6], time:"18:00", points:6, type:"boolean", active:true },
   { id:"evening-activity", name:"Evening Activity", category:"fitness", icon:"footsteps", schedule:[1,2,3,4,5,6], time:"18:30", points:10, type:"activity", active:true },

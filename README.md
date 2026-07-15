@@ -5,6 +5,8 @@ Daymark is a private, installable personal-improvement dashboard built around fi
 ## What is included
 
 - Premium responsive dashboard, full Today checklist, Cycle analysis, History, and Settings views
+- Compact clickable 28-day calendar, four week action-status matrix, and direct selected-day action cards
+- Dedicated routine actions for orange, back physiotherapy, Amla drink, beetroot juice, Temple/Gajara, and two Kegel sessions
 - Sunday-aware schedules and fair points-based scoring that excludes future and not-scheduled habits
 - Temple ritual and Kegel sub-checks with partial credit
 - Automatic one-hour learning completion with manual correction

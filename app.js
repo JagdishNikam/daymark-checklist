@@ -1,6 +1,6 @@
 import {
   CATEGORY_LABELS, DEFAULT_CYCLE_START, addDays, completionFraction, completionStreaks, consistencyLeaders,
-  cycleForDate, cycleWeeks, dateKey, datesInRange, entryFor, formatRange, habitState, habitStats, isFuture,
+  cycleForDate, cycleWeeks, dateKey, datesInRange, entryFor, formatRange, habitState, habitStats, isFuture, isPast,
   isScheduled, parseDate, scoreDay, scorePeriod, streakForHabit, weightStats
 } from "./model.js";
 import { DaymarkStore } from "./storage.js";
@@ -11,7 +11,26 @@ let state = store.state;
 let activeView = "dashboard";
 let selectedDate = dateKey(new Date());
 let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cycleAnchor).index);
+let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
 let inputTimer;
+
+const DASHBOARD_ACTIONS = [
+  {key:"wake",label:"Wake up at 6:30",habitId:"wake-630",icon:"sunrise"},
+  {key:"orange",label:"Orange",habitId:"orange",icon:"orange"},
+  {key:"temple",label:"Temple",habitId:"temple-ritual",subtaskIds:["visited","shiva-water"],icon:"temple"},
+  {key:"gajara",label:"Gajara",habitId:"temple-ritual",subtaskIds:["parvati-gajra"],icon:"spark"},
+  {key:"devpuja",label:"Dev Puja",habitId:"dev-puja",icon:"spark"},
+  {key:"coffee",label:"Black coffee",habitId:"black-coffee",icon:"coffee"},
+  {key:"workout",label:"Workout",habitId:"workout",icon:"dumbbell"},
+  {key:"physio",label:"Back physiotherapy",habitId:"back-physio",icon:"physio"},
+  {key:"kegel1",label:"Kegel 1",habitId:"kegel",subtaskIds:["morning"],icon:"activity"},
+  {key:"soya",label:"Protein soya chunks",habitId:"soya-rice",icon:"bowl"},
+  {key:"amla",label:"Amla drink",habitId:"avla-drink",icon:"leaf"},
+  {key:"paneer",label:"Paneer bhurji",habitId:"protein-lunch",icon:"utensils"},
+  {key:"kegel2",label:"Kegel 2",habitId:"kegel",subtaskIds:["evening"],icon:"activity"},
+  {key:"beetroot",label:"Beetroot juice",habitId:"beetroot-juice",icon:"drop"},
+  {key:"night",label:"Night exercise",habitId:"evening-activity",icon:"footsteps",activity:true}
+];
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
@@ -50,7 +69,7 @@ function render(){
 
 function applyTheme(){
   document.body.classList.add("dark");
-  document.querySelector('meta[name="theme-color"]').content="#090b0e";
+  document.querySelector('meta[name="theme-color"]').content="#070a12";
 }
 
 function renderSidebar(){
@@ -76,34 +95,56 @@ function getInsights(cycle){
   return insights.slice(0,3);
 }
 
+function dashboardActionStatus(action,date){
+  const habit=state.habits.find(item=>item.id===action.habitId);
+  if(!habit||!isScheduled(habit,date))return"not-scheduled";
+  if(isFuture(date))return"upcoming";
+  if(!action.subtaskIds)return habitState(state,habit,date);
+  const subtasks=entryFor(state,habit.id,date).subtasks||{};
+  const completed=action.subtaskIds.filter(id=>subtasks[id]).length;
+  if(completed===action.subtaskIds.length)return"completed";
+  if(completed>0)return"partial";
+  return isPast(date)?"missed":"pending";
+}
+
+function dashboardStateIcon(status){return icon(status==="completed"?"check":status==="missed"?"alert":status==="upcoming"?"lock":status==="not-scheduled"?"archive":"clock");}
+
+function compactCalendarMarkup(cycle,selected){
+  return `<div class="compact-calendar-labels">${["S","M","T","W","T","F","S"].map(day=>`<span>${day}</span>`).join("")}</div><div class="compact-calendar-grid">${datesInRange(cycle.start,cycle.end).map((date,index)=>{
+    const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date));
+    const eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status));
+    const done=statuses.filter(status=>status==="completed").length;
+    const level=isFuture(date)?"future":eligible.length&&done===eligible.length?"complete":done?"progress":statuses.includes("missed")?"missed":"empty";
+    return `<button class="compact-day ${level} ${date===dateKey(new Date())?"today":""} ${date===selected?"selected":""}" data-dashboard-date="${date}" aria-label="Open ${displayDate(date)}"><strong>${index+1}</strong><i></i></button>`;
+  }).join("")}</div>`;
+}
+
+function actionMatrixMarkup(cycle){
+  const weeks=cycleWeeks(cycle),week=weeks[dashboardWeek],dates=datesInRange(week.start,week.end);
+  return `<div class="week-tabs" role="tablist" aria-label="Choose cycle week">${weeks.map((item,index)=>`<button class="${dashboardWeek===index?"active":""}" data-dashboard-week="${index}" role="tab" aria-selected="${dashboardWeek===index}"><span>Week ${index+1}</span><small>${formatRange(item.start,item.end)}</small></button>`).join("")}</div>
+    <div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<button class="matrix-state ${status}" data-dashboard-date="${date}" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${stateLabel(status)}" title="${stateLabel(status)}">${dashboardStateIcon(status)}</button>`;}).join("")}`).join("")}</div></div>`;
+}
+
+function dailyActionCardsMarkup(date){
+  return DASHBOARD_ACTIONS.map(action=>{
+    const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),disabled=["not-scheduled","upcoming"].includes(status),entry=entryFor(state,action.habitId,date);
+    const control=action.activity?`<div class="mini-activity"><button class="${entry.activity==="swimming"?"selected":""}" data-activity="swimming" data-habit-id="${action.habitId}" data-date="${date}" ${disabled?"disabled":""}>Swim</button><button class="${entry.activity==="walking"?"selected":""}" data-activity="walking" data-habit-id="${action.habitId}" data-date="${date}" ${disabled?"disabled":""}>Walk</button>${entry.activity?`<button data-activity="" data-habit-id="${action.habitId}" data-date="${date}">Clear</button>`:""}</div>`:`<button class="action-check ${status==="completed"?"done":""}" data-dashboard-toggle="${action.key}" data-date="${date}" ${disabled?"disabled":""} aria-label="${status==="completed"?"Mark incomplete":"Mark complete"}: ${escapeHtml(action.label)}">${status==="completed"?icon("check"):dashboardStateIcon(status)}</button>`;
+    return `<article class="daily-action-card ${status}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${habit?formatTime(habit.time):"Anytime"} · ${stateLabel(status)}</p></div>${control}</article>`;
+  }).join("");
+}
+
 function renderDashboard(){
-  const cycle=currentCycle(),today=dateKey(new Date()),todayStats=scoreDay(state,today),cycleStats=scorePeriod(state,cycle.start,cycle.end);
-  const weeks=cycleWeeks(cycle),weekStats=weeks.map(week=>scorePeriod(state,week.start,week.end));
-  const currentWeek=weeks[cycle.week-1],previousWeek=weeks[cycle.week-2];
-  const delta=previousWeek?((scorePeriod(state,currentWeek.start,currentWeek.end).score||0)-(scorePeriod(state,previousWeek.start,previousWeek.end).score||0)):0;
-  const totalActivities=cycleStats.completed+cycleStats.missed+cycleStats.partial+cycleStats.pending;
-  const weights=weightStats(state,cycle);
-  const chips=`<span class="chip accent">Cycle ${cycle.number}</span><span class="chip">Day ${cycle.day} of 28</span><span class="chip">Week ${cycle.week}</span>`;
-  const actions=`<button class="button primary" data-action="quick-add">${icon("plus")} Quick add</button><button class="button" data-action="open-settings">${icon("settings")} Settings</button>`;
+  const cycle=currentCycle(),today=dateKey(new Date()),viewDate=selectedDate,weights=weightStats(state,cycle);
+  const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,viewDate));
+  const completed=statuses.filter(status=>status==="completed").length,pending=statuses.filter(status=>["pending","partial"].includes(status)).length,missed=statuses.filter(status=>status==="missed").length,rest=statuses.filter(status=>status==="not-scheduled").length;
   $("#dashboardContent").innerHTML=`
-    ${headerMarkup(`${displayDate(today,{weekday:"long"}).toUpperCase()} · ${displayDate(today,{month:"long",day:"numeric",year:"numeric"}).toUpperCase()}`,`${greeting()}${state.settings.name?`, ${state.settings.name}`:""}.`,"Build the life you want, one completed promise at a time.",actions,chips)}
-    <div class="dashboard-grid">
-      <section class="card score-card">
-        <div class="score-card-head"><span>28-DAY IMPROVEMENT SCORE</span>${previousWeek?`<span class="delta ${delta<0?"down":""}">${delta>=0?"+":""}${delta}% vs last week</span>`:"<span class=\"chip\">First cycle</span>"}</div>
-        <div class="score-layout"><div class="score-ring" style="--score:${cycleStats.score||0}"><div><strong>${scoreText(cycleStats.score)}</strong><span>CYCLE SCORE</span></div></div>
-          <div class="score-copy"><h2>${motivationalMessage(cycleStats.score)}</h2><p>Only eligible days and scheduled habits count. Rest days and future days never reduce this score.</p><div class="score-facts"><div><strong>${cycleStats.completed}</strong><span>COMPLETED</span></div><div><strong>${totalActivities}</strong><span>ELIGIBLE</span></div></div></div>
-        </div>
-      </section>
-      <section class="card today-card"><div class="card-title-row"><div><p class="kicker">TODAY’S PROGRESS</p><h2>Keep the next promise</h2></div><strong class="mini-score">${scoreText(todayStats.score)}</strong></div>
-        <div class="metric-row"><div class="metric success"><strong>${todayStats.completed}</strong><span>Completed</span></div><div class="metric warning"><strong>${todayStats.pending+todayStats.partial}</strong><span>Remaining</span></div><div class="metric danger"><strong>${todayStats.missed}</strong><span>Missed</span></div></div>
-        <div class="progress-track"><div class="progress-fill green" style="--value:${todayStats.score||0}"></div></div><button class="button ghost" data-action="show-today" style="margin-top:13px">Open today’s checklist ${icon("arrowRight")}</button>
-      </section>
-      <section class="card weight-card">${weightCardMarkup(weights,today)}</section>
+    <div class="dashboard-hero">
+      <header class="dashboard-welcome"><p class="kicker">${displayDate(today,{weekday:"long",month:"long",day:"numeric",year:"numeric"}).toUpperCase()}</p><h1>${greeting()}${state.settings.name?`, ${state.settings.name}`:""}.</h1><p>Your 28-day action console—simple, visual, and built for consistency.</p><div class="header-chips"><span class="chip accent">Cycle ${cycle.number}</span><span class="chip">Day ${cycle.day} of 28</span><span class="chip">Week ${cycle.week}</span></div><div class="hero-actions"><button class="button primary" data-action="quick-add">${icon("plus")} Quick add</button><button class="button" data-action="open-settings">${icon("settings")} Settings</button></div></header>
+      <section class="card compact-calendar-card"><div class="compact-calendar-head"><div><p class="kicker">28 DAYS</p><h2>${formatRange(cycle.start,cycle.end)}</h2></div><span>Tap a day</span></div>${compactCalendarMarkup(cycle,viewDate)}</section>
     </div>
-    <section class="section"><div class="section-heading"><div><h2>Four-week cycle</h2><p>${formatRange(cycle.start,cycle.end)} · four complete Sunday–Saturday weeks</p></div><button class="text-button" data-view="cycle">Open cycle</button></div><div class="week-grid">${weeks.map((week,index)=>weekCardMarkup(week,weekStats[index],cycle.week===index+1)).join("")}</div></section>
-    <section class="section card" style="padding:17px"><div class="section-heading"><div><h2>28-day rhythm</h2><p>Every square is a real eligible day—future days stay neutral.</p></div></div>${heatmapMarkup(cycle,selectedDate)}</section>
-    <section class="section"><div class="section-heading"><div><h2>Today’s routine</h2><p>Grouped habits with schedule-aware status</p></div><button class="text-button" data-action="show-today">View all</button></div><div class="routine-preview">${routinePreviewMarkup(today)}</div></section>
-    <section class="section"><div class="section-heading"><div><h2>Data-based insights</h2><p>Calculated only from your saved activity</p></div></div><div class="insight-list">${getInsights(cycle).map(item=>`<article class="insight"><div class="icon-wrap">${icon(item.icon)}</div><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></div></article>`).join("")}</div></section>`;
+    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">28-DAY IMPROVEMENT BOARD</p><h2>Actions, not abstract scores</h2><p>Green completed · red missed · amber pending · grey not applicable</p></div><button class="button" data-view="cycle">Cycle details ${icon("arrowRight")}</button></div>${actionMatrixMarkup(cycle)}</section>
+    <section class="section" id="dailyActionBoard"><div class="section-heading"><div><p class="kicker">SELECTED DAY</p><h2>${viewDate===today?"Today":displayDate(viewDate)} actions</h2><p>Update every action directly from these cards—no timeline.</p></div><button class="button" data-action="show-today" data-date="${viewDate}">Full details ${icon("arrowRight")}</button></div><div class="day-status-strip"><span class="success"><strong>${completed}</strong> Completed</span><span class="warning"><strong>${pending}</strong> Pending</span><span class="danger"><strong>${missed}</strong> Missed</span><span><strong>${rest}</strong> Not applicable</span></div><div class="daily-action-grid">${dailyActionCardsMarkup(viewDate)}</div></section>
+    <div class="dashboard-support"><section class="card weight-card">${weightCardMarkup(weights,today)}</section><section><div class="section-heading"><div><h2>Data-based insights</h2><p>Calculated only from saved activity</p></div></div><div class="insight-list">${getInsights(cycle).map(item=>`<article class="insight"><div class="icon-wrap">${icon(item.icon)}</div><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></div></article>`).join("")}</div></section></div>`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
@@ -253,6 +294,11 @@ function toggleHabit(habitId,date){
   const done=completionFraction(habit,entryFor(state,habitId,date))===1;
   store.setEntry(date,habitId,{status:done?"pending":"completed"});syncState();render();showToast(done?"Marked pending":"Habit completed");
 }
+function toggleDashboardAction(actionKey,date){
+  const action=DASHBOARD_ACTIONS.find(item=>item.key===actionKey),habit=state.habits.find(item=>item.id===action?.habitId);if(!action||!habit)return;
+  if(action.subtaskIds){const entry=entryFor(state,habit.id,date),subtasks={...(entry.subtasks||{})},done=action.subtaskIds.every(id=>subtasks[id]);action.subtaskIds.forEach(id=>{subtasks[id]=!done;});store.setEntry(date,habit.id,{subtasks});syncState();render();showToast(done?`${action.label} marked pending`:`${action.label} completed`);return;}
+  toggleHabit(habit.id,date);
+}
 function setSubtask(habitId,subtaskId,date,checked){const current=entryFor(state,habitId,date);store.setEntry(date,habitId,{subtasks:{...(current.subtasks||{}),[subtaskId]:checked}});syncState();render();}
 function saveEntryField(input){const value=input.type==="number"?(input.value===""?null:Number(input.value)):input.value;store.setEntry(input.dataset.date,input.dataset.habitId,{[input.dataset.entryField]:value});syncState();render();showToast("Saved automatically");}
 
@@ -279,8 +325,11 @@ document.addEventListener("click",event=>{
   const nav=event.target.closest("[data-view]");if(nav){showView(nav.dataset.view);return;}
   const viewLink=event.target.closest("[data-view-link]");if(viewLink){event.preventDefault();showView(viewLink.dataset.viewLink);return;}
   const action=event.target.closest("[data-action]")?.dataset.action;
-  if(action==="quick-add"){openDialog("quickAddDialog");return;}if(action==="open-settings"){showView("settings");return;}if(action==="show-today"){selectedDate=dateKey(new Date());renderToday();showView("today");return;}if(action==="record-weight"){openWeightDialog(event.target.closest("[data-date]")?.dataset.date||selectedDate);return;}if(action==="export"){exportData();return;}if(action==="import"){$("#importInput").click();return;}if(action==="reset"){if(confirm("Reset Daymark v3 data? Your legacy daymark-v1 data will remain untouched.")){store.reset();syncState();selectedCycleIndex=0;render();showToast("Daymark reset");}return;}
+  if(action==="quick-add"){openDialog("quickAddDialog");return;}if(action==="open-settings"){showView("settings");return;}if(action==="show-today"){selectedDate=event.target.closest("[data-date]")?.dataset.date||dateKey(new Date());renderToday();showView("today");return;}if(action==="record-weight"){openWeightDialog(event.target.closest("[data-date]")?.dataset.date||selectedDate);return;}if(action==="export"){exportData();return;}if(action==="import"){$("#importInput").click();return;}if(action==="reset"){if(confirm("Reset Daymark v3 data? Your legacy daymark-v1 data will remain untouched.")){store.reset();syncState();selectedCycleIndex=0;render();showToast("Daymark reset");}return;}
   const close=event.target.closest("[data-close-dialog]");if(close){closeDialog(close.dataset.closeDialog);return;}
+  const dashboardDate=event.target.closest("[data-dashboard-date]");if(dashboardDate){selectedDate=dashboardDate.dataset.dashboardDate;dashboardWeek=Math.max(0,Math.min(3,cycleForDate(selectedDate,state.settings.cycleAnchor).week-1));renderDashboard();renderIconSlots($("#dashboardView"));setTimeout(()=>$("#dailyActionBoard")?.scrollIntoView({behavior:"smooth",block:"start"}),20);return;}
+  const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);renderDashboard();renderIconSlots($("#dashboardView"));return;}
+  const dashboardToggle=event.target.closest("[data-dashboard-toggle]");if(dashboardToggle){toggleDashboardAction(dashboardToggle.dataset.dashboardToggle,dashboardToggle.dataset.date);return;}
   const toggle=event.target.closest("[data-toggle-habit]");if(toggle){toggleHabit(toggle.dataset.toggleHabit,toggle.dataset.date);return;}
   const taskToggle=event.target.closest("[data-toggle-task]");if(taskToggle){store.update(s=>{const task=s.oneTimeTasks.find(t=>t.id===taskToggle.dataset.toggleTask);if(task)task.completed=!task.completed;});syncState();render();return;}
   const select=event.target.closest("[data-select-date]");if(select){selectedDate=select.dataset.selectDate;render();showView("today");closeDialog("habitDialog");return;}

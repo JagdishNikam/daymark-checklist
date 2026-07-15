@@ -45,10 +45,17 @@ function migrateLegacy(base, legacy) {
 function normalize(raw) {
   const initial=createInitialState();
   if(!raw || raw.version !== 3) return initial;
+  const existingHabits=Array.isArray(raw.habits) ? clone(raw.habits) : [];
+  DEFAULT_HABITS.forEach(defaultHabit=>{
+    const current=existingHabits.find(habit=>habit.id===defaultHabit.id);
+    if(!current) existingHabits.push(clone(defaultHabit));
+    if(current?.id==="kegel") current.subtasks=clone(defaultHabit.subtasks);
+    if(current?.id==="back-physio") current.category=defaultHabit.category;
+  });
   const normalized = {
     ...initial, ...raw,
     settings:{...initial.settings,...raw.settings},
-    habits:Array.isArray(raw.habits) ? raw.habits : initial.habits,
+    habits:existingHabits.length ? existingHabits : initial.habits,
     entries:raw.entries || {}, weights:raw.weights || {}, dayNotes:raw.dayNotes || {}, oneTimeTasks:raw.oneTimeTasks || []
   };
   normalized.settings.theme="dark";

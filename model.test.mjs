@@ -14,9 +14,13 @@ assert.deepEqual(cycleWeeks(cycle).map(w=>[w.start,w.end]), [
 const workout=DEFAULT_HABITS.find(h=>h.id==="workout");
 const temple=DEFAULT_HABITS.find(h=>h.id==="temple-ritual");
 const learning=DEFAULT_HABITS.find(h=>h.id==="learning");
+const kegel=DEFAULT_HABITS.find(h=>h.id==="kegel");
 assert.equal(isScheduled(workout,"2026-07-12"),false,"Sunday workout must be unscheduled");
 assert.equal(isScheduled(temple,"2026-07-12"),true,"Temple ritual must be scheduled Sunday");
 assert.equal(isScheduled(learning,"2026-07-18"),false,"Learning must be unscheduled Saturday");
+assert.deepEqual(kegel.subtasks.map(item=>item.name),["Kegel 1","Kegel 2"],"Dashboard routine uses two Kegel sessions");
+assert.equal(DEFAULT_HABITS.some(h=>h.id==="back-physio"),true,"Back physiotherapy must be seeded");
+assert.equal(DEFAULT_HABITS.some(h=>h.id==="avla-drink"),true,"Amla drink must be seeded");
 
 const state={settings:{cycleAnchor:"2026-07-12"},habits:DEFAULT_HABITS,entries:{"2026-07-15":{
   "temple-ritual":{subtasks:{visited:true,"shiva-water":true,"parvati-gajra":false}},
