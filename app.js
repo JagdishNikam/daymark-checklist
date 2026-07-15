@@ -318,6 +318,5 @@ $("#habitDialog").addEventListener("submit",event=>{
 $("#importInput").addEventListener("change",async event=>{const file=event.target.files[0];if(!file)return;try{store.import(await file.text());syncState();render();showToast("Backup imported");}catch(err){showToast(err.message);}finally{event.target.value="";}});
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(["dashboard","today","cycle","history","settings"].includes(view))showView(view);});
 
-if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("service-worker.js");
 render();
 const initialView=location.hash.slice(1);if(["dashboard","today","cycle","history","settings"].includes(initialView))showView(initialView);

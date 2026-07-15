@@ -1,5 +1,9 @@
-const CACHE = "daymark-v6-dark-theme";
-const ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./model.js", "./storage.js", "./icons.js", "./manifest.webmanifest", "./icons/icon.svg"];
+const CACHE = "daymark-v7-pwa-ready";
+const ASSETS = [
+  "./", "./index.html", "./styles.css", "./app.js", "./model.js", "./storage.js", "./icons.js",
+  "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
+  "./screenshots/dashboard-mobile.png", "./screenshots/dashboard-wide.png"
+];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
