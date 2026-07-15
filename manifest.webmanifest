@@ -1,0 +1,12 @@
+{
+  "name": "Daymark — Daily & Weekly Checklist",
+  "short_name": "Daymark",
+  "description": "A calm daily and weekly checklist.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f1",
+  "theme_color": "#f6f7f1",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
