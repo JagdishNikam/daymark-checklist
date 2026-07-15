@@ -1,4 +1,4 @@
-const CACHE = "daymark-v14-midnight-glass";
+const CACHE = "daymark-v15-today-horizontal";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
