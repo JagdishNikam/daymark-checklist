@@ -111,7 +111,11 @@ function dashboardActionStatus(action,date){
   return isPast(date)?"missed":"pending";
 }
 
-function dashboardStateIcon(status){if(["upcoming","pending"].includes(status))return"";return `<span class="status-glyph">${icon(status==="completed"?"statusComplete":status==="missed"?"statusIncomplete":status==="not-scheduled"?"statusNA":"clock")}</span>`;}
+function dashboardStateIcon(status){
+  if(["upcoming","pending"].includes(status))return"";
+  if(status==="not-scheduled")return`<span class="status-glyph na-mark" aria-hidden="true">N/A</span>`;
+  return `<span class="status-glyph">${icon(status==="completed"?"check":status==="missed"?"x":"clock")}</span>`;
+}
 function dashboardStateLabel(status){return status==="not-scheduled"?"Not applicable":status==="missed"?"Not completed":stateLabel(status);}
 
 function compactCalendarMarkup(cycle,selected){
@@ -176,17 +180,10 @@ function routinePreviewMarkup(date){
 }
 
 function renderToday(){
-  const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor),future=isFuture(selectedDate),mappedIds=new Set(DASHBOARD_ACTIONS.map(action=>action.habitId));
-  const extras=state.habits.filter(habit=>habit.active&&!mappedIds.has(habit.id));
-  const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,selectedDate));
-  const completed=statuses.filter(status=>status==="completed").length,missed=statuses.filter(status=>status==="missed").length,na=statuses.filter(status=>status==="not-scheduled").length,pending=statuses.filter(status=>["pending","partial"].includes(status)).length;
-  const actions=`<button class="button primary" data-action="quick-add">${icon("plus")} Quick add</button><button class="button" data-action="record-weight" data-date="${selectedDate}">${icon("scale")} Weight</button>`;
-  const chips=`<span class="chip ${future?"":"accent"}">${future?"Upcoming":selectedDate===dateKey(new Date())?"Today":isPast(selectedDate)?"Past day":"Selected day"}</span><span class="chip">Cycle ${cycle.number} · Day ${cycle.day}</span>`;
-  $("#todayContent").innerHTML=`${headerMarkup("DAILY CHECKLIST",displayDate(selectedDate),future?"Future actions are blank and locked.":"Choose Completed, Not completed, or Not applicable. Changes save automatically.",actions,chips)}
+  const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
+  $("#todayContent").innerHTML=`
     <div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
-    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Completed actions are highlighted in green. Previous days remain editable.</p></div></div><div class="day-status-strip"><span class="success"><strong>${completed}</strong> Completed</span><span class="danger"><strong>${missed}</strong> Not completed</span><span class="warning"><strong>${na}</strong> Not applicable</span><span><strong>${pending}</strong> Unset</span></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section>
-    <div class="habit-groups additional-tracking">${extras.length?`<section><div class="habit-group-title">${icon("plus")}<span>Additional tracking</span></div><div class="habit-stack">${extras.map(h=>habitCardMarkup(h,selectedDate)).join("")}</div></section>`:""}${weightGroupMarkup(selectedDate)}${oneTimeGroupMarkup(selectedDate)}</div>
-    <section class="card day-note-card section"><div class="card-title-row"><div><p class="kicker">DAILY NOTE</p><h2>Reflection for this day</h2></div>${icon("note")}</div><textarea data-day-note="${selectedDate}" maxlength="500" ${future?"disabled":""} placeholder="What worked, what felt difficult, or what matters tomorrow?">${escapeHtml(state.dayNotes[selectedDate]||"")}</textarea><p class="autosave-note">Saved automatically on this device</p></section>`;
+    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Completed actions are highlighted in green. Previous days remain editable.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section>`;
 }
 function habitGroupMarkup(category,habits,date){return`<section><div class="habit-group-title">${icon(categoryIcon(category))}<span>${escapeHtml(CATEGORY_LABELS[category]||category)}</span></div><div class="habit-stack">${habits.map(h=>habitCardMarkup(h,date)).join("")}</div></section>`;}
 function habitCardMarkup(habit,date){
