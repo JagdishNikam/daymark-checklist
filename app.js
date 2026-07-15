@@ -111,7 +111,7 @@ function dashboardActionStatus(action,date){
   return isPast(date)?"missed":"pending";
 }
 
-function dashboardStateIcon(status){if(["upcoming","pending"].includes(status))return"";return icon(status==="completed"?"check":status==="missed"?"x":status==="not-scheduled"?"minus":"clock");}
+function dashboardStateIcon(status){if(["upcoming","pending"].includes(status))return"";return `<span class="status-glyph">${icon(status==="completed"?"statusComplete":status==="missed"?"statusIncomplete":status==="not-scheduled"?"statusNA":"clock")}</span>`;}
 function dashboardStateLabel(status){return status==="not-scheduled"?"Not applicable":status==="missed"?"Not completed":stateLabel(status);}
 
 function compactCalendarMarkup(cycle,selected){
@@ -131,10 +131,10 @@ function actionMatrixMarkup(cycle){
 
 function dailyActionCardsMarkup(date){
   return DASHBOARD_ACTIONS.map(action=>{
-    const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
+    const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),today=date===dateKey(new Date()),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
     const selected=action.activity&&status==="completed"?(entry.activity||""):(saved||(status==="completed"?"completed":status==="missed"?"missed":status==="not-scheduled"?"not-applicable":""));
     const options=action.activity?[["","Choose status"],["swimming","Completed · Swimming"],["walking","Completed · Walking"],["missed","Not completed"],["not-applicable","Not applicable"]]:[["","Choose status"],["completed","Completed"],["missed","Not completed"],["not-applicable","Not applicable"]];
-    const control=`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}" ${future?"disabled":""}>${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
+    const control=future?`<span class="action-upcoming-label">Upcoming</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}: ${escapeHtml(action.label)}" ${status==="completed"?"disabled":""}>${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
     return `<article class="daily-action-card ${status}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${habit?formatTime(habit.time):"Anytime"} · ${dashboardStateLabel(status)}</p></div>${control}</article>`;
   }).join("");
 }
@@ -332,6 +332,7 @@ function submitWeight(event){event.preventDefault();try{const value=Number($("#w
 function exportData(){const blob=new Blob([store.export()],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`daymark-backup-${dateKey(new Date())}.json`;link.click();URL.revokeObjectURL(link.href);showToast("Backup exported");}
 
 document.addEventListener("click",event=>{
+  const actionComplete=event.target.closest("[data-action-complete]");if(actionComplete){applyActionStatus(actionComplete.dataset.actionComplete,actionComplete.dataset.date,"completed");return;}
   const nav=event.target.closest("[data-view]");if(nav){showView(nav.dataset.view);return;}
   const viewLink=event.target.closest("[data-view-link]");if(viewLink){event.preventDefault();showView(viewLink.dataset.viewLink);return;}
   const action=event.target.closest("[data-action]")?.dataset.action;
