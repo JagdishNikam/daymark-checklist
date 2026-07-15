@@ -51,6 +51,10 @@ assert.equal(store.state.entries["2026-07-15"].learning.minutes,20,"Entry patche
 store.setWeight("2026-07-15",82.5);store.setWeight("2026-07-15",82.2,"After workout");
 assert.equal(Object.keys(store.state.weights).length,1,"Weight records must remain unique per date");
 assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).weights["2026-07-15"].value,82.2,"Changes must persist immediately");
+store.setActionState("2026-07-13","workout","completed");
+assert.equal(store.state.actionStates["2026-07-13"].workout,"completed","Manual action states must persist by date and stable action key");
+store.setActionState("2026-07-13","workout","");
+assert.equal(store.state.actionStates["2026-07-13"],undefined,"Cleared action states must not leave empty records");
 assert.throws(()=>store.import('{"version":2}'),/not a supported/);
 
 console.log("Daymark model and storage tests passed");

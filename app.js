@@ -96,9 +96,13 @@ function getInsights(cycle){
 }
 
 function dashboardActionStatus(action,date){
+  if(isFuture(date))return"upcoming";
+  const saved=state.actionStates?.[date]?.[action.key];
+  if(saved==="completed")return"completed";
+  if(saved==="missed")return"missed";
+  if(saved==="not-applicable")return"not-scheduled";
   const habit=state.habits.find(item=>item.id===action.habitId);
   if(!habit||!isScheduled(habit,date))return"not-scheduled";
-  if(isFuture(date))return"upcoming";
   if(!action.subtaskIds)return habitState(state,habit,date);
   const subtasks=entryFor(state,habit.id,date).subtasks||{};
   const completed=action.subtaskIds.filter(id=>subtasks[id]).length;
@@ -107,7 +111,8 @@ function dashboardActionStatus(action,date){
   return isPast(date)?"missed":"pending";
 }
 
-function dashboardStateIcon(status){return icon(status==="completed"?"check":status==="missed"?"alert":status==="upcoming"?"lock":status==="not-scheduled"?"archive":"clock");}
+function dashboardStateIcon(status){if(["upcoming","pending"].includes(status))return"";return icon(status==="completed"?"check":status==="missed"?"x":status==="not-scheduled"?"minus":"clock");}
+function dashboardStateLabel(status){return status==="not-scheduled"?"Not applicable":status==="missed"?"Not completed":stateLabel(status);}
 
 function compactCalendarMarkup(cycle,selected){
   return `<div class="compact-calendar-labels">${["S","M","T","W","T","F","S"].map(day=>`<span>${day}</span>`).join("")}</div><div class="compact-calendar-grid">${datesInRange(cycle.start,cycle.end).map((date,index)=>{
@@ -120,31 +125,25 @@ function compactCalendarMarkup(cycle,selected){
 }
 
 function actionMatrixMarkup(cycle){
-  const weeks=cycleWeeks(cycle),week=weeks[dashboardWeek],dates=datesInRange(week.start,week.end);
-  return `<div class="week-tabs" role="tablist" aria-label="Choose cycle week">${weeks.map((item,index)=>`<button class="${dashboardWeek===index?"active":""}" data-dashboard-week="${index}" role="tab" aria-selected="${dashboardWeek===index}"><span>Week ${index+1}</span><small>${formatRange(item.start,item.end)}</small></button>`).join("")}</div>
-    <div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<button class="matrix-state ${status}" data-dashboard-date="${date}" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${stateLabel(status)}" title="${stateLabel(status)}">${dashboardStateIcon(status)}</button>`;}).join("")}`).join("")}</div></div>`;
+  const week=cycleWeeks(cycle)[cycle.week-1],dates=datesInRange(week.start,week.end);
+  return `<div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day ${date===dateKey(new Date())?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("")}</div></div>`;
 }
 
 function dailyActionCardsMarkup(date){
   return DASHBOARD_ACTIONS.map(action=>{
-    const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),disabled=["not-scheduled","upcoming"].includes(status),entry=entryFor(state,action.habitId,date);
-    const control=action.activity?`<div class="mini-activity"><button class="${entry.activity==="swimming"?"selected":""}" data-activity="swimming" data-habit-id="${action.habitId}" data-date="${date}" ${disabled?"disabled":""}>Swim</button><button class="${entry.activity==="walking"?"selected":""}" data-activity="walking" data-habit-id="${action.habitId}" data-date="${date}" ${disabled?"disabled":""}>Walk</button>${entry.activity?`<button data-activity="" data-habit-id="${action.habitId}" data-date="${date}">Clear</button>`:""}</div>`:`<button class="action-check ${status==="completed"?"done":""}" data-dashboard-toggle="${action.key}" data-date="${date}" ${disabled?"disabled":""} aria-label="${status==="completed"?"Mark incomplete":"Mark complete"}: ${escapeHtml(action.label)}">${status==="completed"?icon("check"):dashboardStateIcon(status)}</button>`;
-    return `<article class="daily-action-card ${status}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${habit?formatTime(habit.time):"Anytime"} · ${stateLabel(status)}</p></div>${control}</article>`;
+    const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
+    const selected=action.activity&&status==="completed"?(entry.activity||""):(saved||(status==="completed"?"completed":status==="missed"?"missed":status==="not-scheduled"?"not-applicable":""));
+    const options=action.activity?[["","Choose status"],["swimming","Completed · Swimming"],["walking","Completed · Walking"],["missed","Not completed"],["not-applicable","Not applicable"]]:[["","Choose status"],["completed","Completed"],["missed","Not completed"],["not-applicable","Not applicable"]];
+    const control=`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}" ${future?"disabled":""}>${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
+    return `<article class="daily-action-card ${status}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${habit?formatTime(habit.time):"Anytime"} · ${dashboardStateLabel(status)}</p></div>${control}</article>`;
   }).join("");
 }
 
 function renderDashboard(){
-  const cycle=currentCycle(),today=dateKey(new Date()),viewDate=selectedDate,weights=weightStats(state,cycle);
-  const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,viewDate));
-  const completed=statuses.filter(status=>status==="completed").length,pending=statuses.filter(status=>["pending","partial"].includes(status)).length,missed=statuses.filter(status=>status==="missed").length,rest=statuses.filter(status=>status==="not-scheduled").length;
+  const cycle=currentCycle(),week=cycleWeeks(cycle)[cycle.week-1];
   $("#dashboardContent").innerHTML=`
-    <div class="dashboard-hero">
-      <header class="dashboard-welcome"><p class="kicker">${displayDate(today,{weekday:"long",month:"long",day:"numeric",year:"numeric"}).toUpperCase()}</p><h1>${greeting()}${state.settings.name?`, ${state.settings.name}`:""}.</h1><p>Your 28-day action console—simple, visual, and built for consistency.</p><div class="header-chips"><span class="chip accent">Cycle ${cycle.number}</span><span class="chip">Day ${cycle.day} of 28</span><span class="chip">Week ${cycle.week}</span></div><div class="hero-actions"><button class="button primary" data-action="quick-add">${icon("plus")} Quick add</button><button class="button" data-action="open-settings">${icon("settings")} Settings</button></div></header>
-      <section class="card compact-calendar-card"><div class="compact-calendar-head"><div><p class="kicker">28 DAYS</p><h2>${formatRange(cycle.start,cycle.end)}</h2></div><span>Tap a day</span></div>${compactCalendarMarkup(cycle,viewDate)}</section>
-    </div>
-    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">28-DAY IMPROVEMENT BOARD</p><h2>Actions, not abstract scores</h2><p>Green completed · red missed · amber pending · grey not applicable</p></div><button class="button" data-view="cycle">Cycle details ${icon("arrowRight")}</button></div>${actionMatrixMarkup(cycle)}</section>
-    <section class="section" id="dailyActionBoard"><div class="section-heading"><div><p class="kicker">SELECTED DAY</p><h2>${viewDate===today?"Today":displayDate(viewDate)} actions</h2><p>Update every action directly from these cards—no timeline.</p></div><button class="button" data-action="show-today" data-date="${viewDate}">Full details ${icon("arrowRight")}</button></div><div class="day-status-strip"><span class="success"><strong>${completed}</strong> Completed</span><span class="warning"><strong>${pending}</strong> Pending</span><span class="danger"><strong>${missed}</strong> Missed</span><span><strong>${rest}</strong> Not applicable</span></div><div class="daily-action-grid">${dailyActionCardsMarkup(viewDate)}</div></section>
-    <div class="dashboard-support"><section class="card weight-card">${weightCardMarkup(weights,today)}</section><section><div class="section-heading"><div><h2>Data-based insights</h2><p>Calculated only from saved activity</p></div></div><div class="insight-list">${getInsights(cycle).map(item=>`<article class="insight"><div class="icon-wrap">${icon(item.icon)}</div><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.text)}</p></div></article>`).join("")}</div></section></div>`;
+    <header class="visual-header"><p class="kicker">WEEK ${cycle.week} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Small disciplines, repeated daily, create a life you’re proud of.</h1><p>Focus on today. Let consistency build the result.</p></header>
+    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">CURRENT WEEK</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
@@ -177,14 +176,16 @@ function routinePreviewMarkup(date){
 }
 
 function renderToday(){
-  const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor),stats=scoreDay(state,selectedDate),future=isFuture(selectedDate);
-  const groups=Object.keys(CATEGORY_LABELS).map(category=>({category,habits:state.habits.filter(h=>h.active&&h.category===category)})).filter(group=>group.habits.length);
+  const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor),future=isFuture(selectedDate),mappedIds=new Set(DASHBOARD_ACTIONS.map(action=>action.habitId));
+  const extras=state.habits.filter(habit=>habit.active&&!mappedIds.has(habit.id));
+  const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,selectedDate));
+  const completed=statuses.filter(status=>status==="completed").length,missed=statuses.filter(status=>status==="missed").length,na=statuses.filter(status=>status==="not-scheduled").length,pending=statuses.filter(status=>["pending","partial"].includes(status)).length;
   const actions=`<button class="button primary" data-action="quick-add">${icon("plus")} Quick add</button><button class="button" data-action="record-weight" data-date="${selectedDate}">${icon("scale")} Weight</button>`;
-  const chips=`<span class="chip ${future?"":"accent"}">${future?"Upcoming":selectedDate===dateKey(new Date())?"Today":isFuture(dateKey(new Date()),selectedDate)?"Past day":"Selected day"}</span><span class="chip">Cycle ${cycle.number} · Day ${cycle.day}</span>`;
-  $("#todayContent").innerHTML=`${headerMarkup("DAILY CHECKLIST",displayDate(selectedDate),future?"Future habits are locked until their day arrives.":"Everything saves automatically as you update it.",actions,chips)}
+  const chips=`<span class="chip ${future?"":"accent"}">${future?"Upcoming":selectedDate===dateKey(new Date())?"Today":isPast(selectedDate)?"Past day":"Selected day"}</span><span class="chip">Cycle ${cycle.number} · Day ${cycle.day}</span>`;
+  $("#todayContent").innerHTML=`${headerMarkup("DAILY CHECKLIST",displayDate(selectedDate),future?"Future actions are blank and locked.":"Choose Completed, Not completed, or Not applicable. Changes save automatically.",actions,chips)}
     <div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
-    <section class="card daily-summary"><div class="daily-summary-top"><div><h2>${future?"Upcoming schedule":"Daily progress"}</h2><p>Not-scheduled habits never count against you.</p></div><strong class="daily-score">${scoreText(stats.score)}</strong></div><div class="summary-pills"><span class="summary-pill"><strong>${stats.completed}</strong> completed</span><span class="summary-pill"><strong>${stats.pending}</strong> pending</span><span class="summary-pill"><strong>${stats.partial}</strong> partial</span><span class="summary-pill"><strong>${stats.missed}</strong> missed</span></div></section>
-    <div class="habit-groups">${groups.map(group=>habitGroupMarkup(group.category,group.habits,selectedDate)).join("")}${weightGroupMarkup(selectedDate)}${oneTimeGroupMarkup(selectedDate)}</div>
+    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Completed actions are highlighted in green. Previous days remain editable.</p></div></div><div class="day-status-strip"><span class="success"><strong>${completed}</strong> Completed</span><span class="danger"><strong>${missed}</strong> Not completed</span><span class="warning"><strong>${na}</strong> Not applicable</span><span><strong>${pending}</strong> Unset</span></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section>
+    <div class="habit-groups additional-tracking">${extras.length?`<section><div class="habit-group-title">${icon("plus")}<span>Additional tracking</span></div><div class="habit-stack">${extras.map(h=>habitCardMarkup(h,selectedDate)).join("")}</div></section>`:""}${weightGroupMarkup(selectedDate)}${oneTimeGroupMarkup(selectedDate)}</div>
     <section class="card day-note-card section"><div class="card-title-row"><div><p class="kicker">DAILY NOTE</p><h2>Reflection for this day</h2></div>${icon("note")}</div><textarea data-day-note="${selectedDate}" maxlength="500" ${future?"disabled":""} placeholder="What worked, what felt difficult, or what matters tomorrow?">${escapeHtml(state.dayNotes[selectedDate]||"")}</textarea><p class="autosave-note">Saved automatically on this device</p></section>`;
 }
 function habitGroupMarkup(category,habits,date){return`<section><div class="habit-group-title">${icon(categoryIcon(category))}<span>${escapeHtml(CATEGORY_LABELS[category]||category)}</span></div><div class="habit-stack">${habits.map(h=>habitCardMarkup(h,date)).join("")}</div></section>`;}
@@ -299,6 +300,15 @@ function toggleDashboardAction(actionKey,date){
   if(action.subtaskIds){const entry=entryFor(state,habit.id,date),subtasks={...(entry.subtasks||{})},done=action.subtaskIds.every(id=>subtasks[id]);action.subtaskIds.forEach(id=>{subtasks[id]=!done;});store.setEntry(date,habit.id,{subtasks});syncState();render();showToast(done?`${action.label} marked pending`:`${action.label} completed`);return;}
   toggleHabit(habit.id,date);
 }
+function applyActionStatus(actionKey,date,value){
+  const action=DASHBOARD_ACTIONS.find(item=>item.key===actionKey),habit=state.habits.find(item=>item.id===action?.habitId);if(!action||!habit)return;
+  const saved=["swimming","walking"].includes(value)?"completed":value;
+  store.setActionState(date,actionKey,saved);
+  if(action.subtaskIds){const entry=entryFor(state,habit.id,date),subtasks={...(entry.subtasks||{})};action.subtaskIds.forEach(id=>{subtasks[id]=saved==="completed";});store.setEntry(date,habit.id,{subtasks});}
+  else if(action.activity)store.setEntry(date,habit.id,{activity:["swimming","walking"].includes(value)?value:null});
+  else store.setEntry(date,habit.id,{status:saved==="completed"?"completed":"pending"});
+  syncState();render();showToast(saved==="completed"?`${action.label} completed`:saved==="missed"?`${action.label} not completed`:saved==="not-applicable"?`${action.label} marked not applicable`:`${action.label} reset`);
+}
 function setSubtask(habitId,subtaskId,date,checked){const current=entryFor(state,habitId,date);store.setEntry(date,habitId,{subtasks:{...(current.subtasks||{}),[subtaskId]:checked}});syncState();render();}
 function saveEntryField(input){const value=input.type==="number"?(input.value===""?null:Number(input.value)):input.value;store.setEntry(input.dataset.date,input.dataset.habitId,{[input.dataset.entryField]:value});syncState();render();showToast("Saved automatically");}
 
@@ -344,6 +354,7 @@ document.addEventListener("click",event=>{
 
 document.addEventListener("change",event=>{
   const target=event.target;
+  if(target.matches("[data-action-status]")){applyActionStatus(target.dataset.actionStatus,target.dataset.date,target.value);return;}
   if(target.matches("[data-subtask]")){setSubtask(target.dataset.subtask,target.dataset.subtaskId,target.dataset.date,target.checked);return;}
   if(target.matches("[data-entry-field]")){saveEntryField(target);return;}
   if(target.matches("[data-setting]")){store.update(s=>{s.settings[target.dataset.setting]=target.value;});syncState();if(target.dataset.setting==="cycleAnchor")selectedCycleIndex=Math.max(0,currentCycle().index);render();showToast("Setting saved");return;}

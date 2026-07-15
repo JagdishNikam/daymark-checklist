@@ -1,4 +1,4 @@
-const CACHE = "daymark-v8-action-console";
+const CACHE = "daymark-v9-focused-week";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",

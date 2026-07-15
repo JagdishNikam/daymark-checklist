@@ -13,7 +13,7 @@ export function createInitialState() {
       name:"", cycleAnchor:DEFAULT_CYCLE_START, targetWeight:null, startingWeight:null,
       privateLabelHidden:true, theme:"dark", celebrations:true
     },
-    habits:clone(DEFAULT_HABITS), entries:{}, weights:{}, dayNotes:{}, oneTimeTasks:[], migration:{legacyMigrated:false}
+    habits:clone(DEFAULT_HABITS), entries:{}, actionStates:{}, weights:{}, dayNotes:{}, oneTimeTasks:[], migration:{legacyMigrated:false}
   };
 }
 
@@ -56,7 +56,7 @@ function normalize(raw) {
     ...initial, ...raw,
     settings:{...initial.settings,...raw.settings},
     habits:existingHabits.length ? existingHabits : initial.habits,
-    entries:raw.entries || {}, weights:raw.weights || {}, dayNotes:raw.dayNotes || {}, oneTimeTasks:raw.oneTimeTasks || []
+    entries:raw.entries || {}, actionStates:raw.actionStates || {}, weights:raw.weights || {}, dayNotes:raw.dayNotes || {}, oneTimeTasks:raw.oneTimeTasks || []
   };
   normalized.settings.theme="dark";
   return normalized;
@@ -92,6 +92,14 @@ export class DaymarkStore {
   setWeight(date,value,note="") {
     const key=dateKey(date);
     this.state.weights[key]={value:Number(value),note:String(note||""),updatedAt:new Date().toISOString()};
+    return this.save();
+  }
+  setActionState(date,actionKey,value) {
+    const key=dateKey(date);
+    this.state.actionStates[key] ||= {};
+    if(value) this.state.actionStates[key][actionKey]=value;
+    else delete this.state.actionStates[key][actionKey];
+    if(!Object.keys(this.state.actionStates[key]).length) delete this.state.actionStates[key];
     return this.save();
   }
   addHabit(habit) {
