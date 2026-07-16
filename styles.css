@@ -402,3 +402,9 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
 .retention-calendar-card{box-shadow:0 22px 55px rgba(0,0,0,.45)}.retention-day{border-color:#1b4058;background:#061321}.retention-day.maintained{border-color:rgba(0,230,210,.5);background:rgba(0,230,210,.1);color:#00e6d2}.retention-day.broken{border-color:rgba(255,93,120,.5);background:rgba(255,93,120,.1);color:#ff5d78}.retention-day.pending{border-color:#3b4e62;color:#9aaec0}
 .weight-management-chart .section-heading h2,.weight-daily-section h2,.retention-calendar-card h2{color:#f3f7ff}.weight-reading.recorded{border-color:rgba(0,230,210,.5);background:rgba(0,230,210,.09)}.weight-reading.recorded strong{color:#00e6d2}
 @media(max-width:760px){.weekly-pulse{grid-template-columns:1fr}.pulse-ring{width:40px;height:40px}.pulse-ring.large{width:72px;height:72px}.pulse-ring.large::after{inset:6px}}
+
+/* Ensure daily momentum indicators stay circular (legacy bar rule override) */
+.pulse-day>div.pulse-ring{width:44px;height:44px;display:grid;align-items:center;justify-content:center;padding:0;border-radius:50%;background:conic-gradient(#45c9ff calc(var(--value)*1%),#26205a 0);}
+.pulse-day>div.pulse-ring::after{content:"";position:absolute;inset:4px;width:auto;height:auto;border-radius:50%;background:#071421;display:block;padding:0}
+.pulse-day>div.pulse-ring span{position:relative;z-index:2;display:block;color:#f3f7ff;font-size:8px;line-height:1}
+@media(max-width:760px){.pulse-day>div.pulse-ring{width:40px;height:40px}.pulse-day>div.pulse-ring::after{inset:4px}}
