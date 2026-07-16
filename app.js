@@ -12,6 +12,7 @@ let activeView = "today";
 let selectedDate = dateKey(new Date());
 let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cycleAnchor).index);
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
+let dashboardFocusMode = false;
 let inputTimer;
 
 const DASHBOARD_ACTIONS = [
@@ -190,6 +191,36 @@ function dashboardFocusMarkup(cycle){
   return `<section class="dashboard-focus-grid"><button class="dashboard-focus-card retention-focus" data-view="cycle"><span class="focus-art">${icon("shield")}</span><div><p class="kicker">SEMEN RETENTION</p><h3>${retention.current} day${retention.current===1?"":"s"}</h3><p>Current streak · ${retention.cycleCompleted} maintained this cycle</p></div><span class="focus-arrow">${icon("chevron")}</span></button><button class="dashboard-focus-card weight-focus" data-view="history"><span class="focus-art">${icon("scale")}</span><div><p class="kicker">WEIGHT MANAGEMENT</p><h3>${weights.latest==null?"Not recorded":`${formatNumber(weights.latest)} kg`}</h3><p>Target ${formatNumber(target)} kg${weights.remaining==null?"":` · ${formatNumber(weights.remaining)} kg remaining`}</p></div><span class="focus-arrow">${icon("chevron")}</span></button></section>`;
 }
 
+function dashboardActionStreak(action){
+  const today=dateKey(new Date()),keys=datesInRange(state.settings.cycleAnchor,today).reverse();
+  let streak=0;
+  for(const key of keys){
+    const status=dashboardActionStatus(action,key);
+    if(status==="not-scheduled"||status==="upcoming")continue;
+    if(key===today&&["pending","partial"].includes(status))continue;
+    if(status==="completed")streak++;
+    else break;
+  }
+  return streak;
+}
+
+function habitLanesMarkup(cycle){
+  const week=cycleWeeks(cycle)[dashboardWeek],allDates=datesInRange(week.start,week.end),today=dateKey(new Date());
+  const dates=dashboardFocusMode&&allDates.includes(today)?[today]:allDates;
+  const header=`<div class="habit-lane-header"><div><span>Action</span><small>Current streak</small></div><div class="habit-lane-days">${dates.map(date=>`<div class="habit-lane-date ${date===today?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${parseDate(date).getDate()}</span></div>`).join("")}</div></div>`;
+  const rows=DASHBOARD_ACTIONS.map(action=>{const streak=dashboardActionStreak(action);return`<article class="habit-lane"><div class="habit-lane-name"><span class="action-symbol">${icon(action.icon)}</span><div><strong>${escapeHtml(action.label)}</strong><small>${streak?`${icon("trend")} ${streak} day${streak===1?"":"s"}`:"Start a streak"}</small></div></div><div class="habit-lane-days">${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<button class="habit-lane-day ${status} ${date===today?"today":""}" data-today-date="${date}" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}"><span>${dashboardStateIcon(status)}</span><small>${dashboardStateLabel(status)}</small></button>`;}).join("")}</div></article>`;}).join("");
+  return `<div class="habit-lanes ${dashboardFocusMode?"focus-mode":""}">${header}${rows}</div>`;
+}
+
+function dashboardPulseMarkup(cycle){
+  const week=cycleWeeks(cycle)[dashboardWeek],dates=datesInRange(week.start,week.end),today=dateKey(new Date());
+  const totals=dates.reduce((sum,date)=>{if(isFuture(date))return sum;DASHBOARD_ACTIONS.forEach(action=>{const status=dashboardActionStatus(action,date);if(["not-scheduled","upcoming"].includes(status))return;sum.eligible++;if(status==="completed")sum.completed++;});return sum;},{completed:0,eligible:0});
+  const bars=dates.map(date=>{const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date)),eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status)).length,completed=statuses.filter(status=>status==="completed").length,value=eligible?Math.round(completed/eligible*100):0;return`<div class="pulse-day ${date===today?"today":""} ${isFuture(date)?"future":""}"><div><i style="--value:${value}"></i></div><strong>${displayDate(date,{weekday:"narrow"})}</strong><span>${isFuture(date)?"—":`${completed}/${eligible}`}</span></div>`;}).join("");
+  const pending=DASHBOARD_ACTIONS.find(action=>["pending","partial"].includes(dashboardActionStatus(action,today)));
+  const next=pending?`<span class="next-action-icon">${icon(pending.icon)}</span><div><p class="kicker">NEXT BEST ACTION</p><h3>${escapeHtml(pending.label)}</h3><p>Complete this next to build today’s momentum.</p></div>`:`<span class="next-action-icon complete">${icon("check")}</span><div><p class="kicker">TODAY’S SIGNAL</p><h3>${isFuture(week.start)?"This week is upcoming":"You’re clear for now"}</h3><p>${isFuture(week.start)?"Return when this week begins.":"No pending dashboard action needs attention."}</p></div>`;
+  return `<section class="dashboard-pulse-grid"><article class="weekly-pulse card"><div class="pulse-copy"><p class="kicker">WEEKLY MOMENTUM</p><h3>${totals.completed} of ${totals.eligible}</h3><p>eligible actions completed</p></div><div class="pulse-bars">${bars}</div></article><article class="next-action-card card">${next}</article></section>`;
+}
+
 function dailyActionCardsMarkup(date){
   return DASHBOARD_ACTIONS.map(action=>{
     const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),today=date===dateKey(new Date()),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
@@ -202,9 +233,12 @@ function dailyActionCardsMarkup(date){
 
 function renderDashboard(){
   const cycle=currentCycle(),week=cycleWeeks(cycle)[dashboardWeek];
+  const currentWeekSelected=dashboardWeek===cycle.week-1;
+  if(!currentWeekSelected)dashboardFocusMode=false;
   $("#dashboardContent").innerHTML=`
     <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardFocusMarkup(cycle)}</div>
-    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} OVERVIEW</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>`;
+    ${dashboardPulseMarkup(cycle)}
+    <section class="card command-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} · HABIT LANES</p><h2>Consistency, action by action</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Missed <span class="legend-dot na"></span> Not applicable</p></div><button class="focus-mode-button ${dashboardFocusMode?"active":""}" data-dashboard-focus ${currentWeekSelected?"":"disabled"}>${icon(dashboardFocusMode?"cycle":"target")} ${dashboardFocusMode?"Show full week":"Focus on today"}</button></div>${habitLanesMarkup(cycle)}</section>`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
@@ -429,7 +463,8 @@ document.addEventListener("click",event=>{
   const close=event.target.closest("[data-close-dialog]");if(close){closeDialog(close.dataset.closeDialog);return;}
   const dashboardDate=event.target.closest("[data-dashboard-date]");if(dashboardDate){selectedDate=dashboardDate.dataset.dashboardDate;dashboardWeek=Math.max(0,Math.min(3,cycleForDate(selectedDate,state.settings.cycleAnchor).week-1));renderDashboard();renderIconSlots($("#dashboardView"));setTimeout(()=>$("#dailyActionBoard")?.scrollIntoView({behavior:"smooth",block:"start"}),20);return;}
   const todayDate=event.target.closest("[data-today-date]");if(todayDate){selectedDate=todayDate.dataset.todayDate;renderToday();renderIconSlots($("#todayView"));return;}
-  const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);renderDashboard();renderIconSlots($("#dashboardView"));return;}
+  const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);dashboardFocusMode=false;renderDashboard();renderIconSlots($("#dashboardView"));return;}
+  const focusMode=event.target.closest("[data-dashboard-focus]");if(focusMode){dashboardFocusMode=!dashboardFocusMode;renderDashboard();renderIconSlots($("#dashboardView"));return;}
   const dashboardToggle=event.target.closest("[data-dashboard-toggle]");if(dashboardToggle){toggleDashboardAction(dashboardToggle.dataset.dashboardToggle,dashboardToggle.dataset.date);return;}
   const toggle=event.target.closest("[data-toggle-habit]");if(toggle){toggleHabit(toggle.dataset.toggleHabit,toggle.dataset.date);return;}
   const taskToggle=event.target.closest("[data-toggle-task]");if(taskToggle){store.update(s=>{const task=s.oneTimeTasks.find(t=>t.id===taskToggle.dataset.toggleTask);if(task)task.completed=!task.completed;});syncState();render();return;}
