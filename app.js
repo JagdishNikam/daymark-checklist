@@ -1,6 +1,6 @@
 import {
   CATEGORY_LABELS, DEFAULT_CYCLE_START, addDays, completionFraction, completionStreaks, consistencyLeaders,
-  cycleForDate, cycleWeeks, dateKey, datesInRange, entryFor, formatRange, habitState, habitStats, isFuture, isPast,
+  cycleForDate, cycleWeeks, dateKey, datesInRange, daysBetween, entryFor, formatRange, habitState, habitStats, isFuture, isPast,
   isScheduled, parseDate, scoreDay, scorePeriod, streakForHabit, weightStats
 } from "./model.js";
 import { DaymarkStore } from "./storage.js";
@@ -12,7 +12,6 @@ let activeView = "today";
 let selectedDate = dateKey(new Date());
 let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cycleAnchor).index);
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
-let dashboardFocusMode = false;
 let inputTimer;
 
 const DASHBOARD_ACTIONS = [
@@ -95,6 +94,7 @@ function getInsights(cycle){
 
 function dashboardActionStatus(action,date){
   if(isFuture(date))return"upcoming";
+  if(parseDate(date).getDay()===0&&!['temple','gajara'].includes(action.key))return"not-scheduled";
   const saved=state.actionStates?.[date]?.[action.key];
   if(saved==="completed")return"completed";
   if(saved==="missed")return"missed";
@@ -188,7 +188,7 @@ function todayCalendarMarkup(cycle){
 
 function dashboardFocusMarkup(cycle){
   const retention=retentionMetrics(),weights=weightStats(state,cycle),target=state.settings.targetWeight??67;
-  return `<section class="dashboard-focus-grid"><button class="dashboard-focus-card retention-focus" data-view="cycle"><span class="focus-art">${icon("shield")}</span><div><p class="kicker">SEMEN RETENTION</p><h3>${retention.current} day${retention.current===1?"":"s"}</h3><p>Current streak · ${retention.cycleCompleted} maintained this cycle</p></div><span class="focus-arrow">${icon("chevron")}</span></button><button class="dashboard-focus-card weight-focus" data-view="history"><span class="focus-art">${icon("scale")}</span><div><p class="kicker">WEIGHT MANAGEMENT</p><h3>${weights.latest==null?"Not recorded":`${formatNumber(weights.latest)} kg`}</h3><p>Target ${formatNumber(target)} kg${weights.remaining==null?"":` · ${formatNumber(weights.remaining)} kg remaining`}</p></div><span class="focus-arrow">${icon("chevron")}</span></button></section>`;
+  return `<section class="dashboard-focus-grid"><button class="dashboard-focus-card retention-focus" data-view="cycle"><span class="focus-art">${icon("shield")}</span><div><p class="kicker">SEMEN RETENTION</p><h3>${retention.current} day${retention.current===1?"":"s"}</h3><p>Current streak · Longest ${retention.longest} days</p></div><span class="focus-arrow">${icon("chevron")}</span></button><button class="dashboard-focus-card weight-focus" data-view="history"><span class="focus-art">${icon("scale")}</span><div><p class="kicker">WEIGHT MANAGEMENT</p><h3>${weights.latest==null?"Not recorded":`${formatNumber(weights.latest)} kg`}</h3><p>Target ${formatNumber(target)} kg${weights.remaining==null?"":` · ${formatNumber(weights.remaining)} kg remaining`}</p></div><span class="focus-arrow">${icon("chevron")}</span></button></section>`;
 }
 
 function dashboardActionStreak(action){
@@ -205,20 +205,20 @@ function dashboardActionStreak(action){
 }
 
 function habitLanesMarkup(cycle){
-  const week=cycleWeeks(cycle)[dashboardWeek],allDates=datesInRange(week.start,week.end),today=dateKey(new Date());
-  const dates=dashboardFocusMode&&allDates.includes(today)?[today]:allDates;
+  const week=cycleWeeks(cycle)[dashboardWeek],dates=datesInRange(week.start,week.end),today=dateKey(new Date());
   const header=`<div class="habit-lane-header"><div><span>Action</span><small>Current streak</small></div><div class="habit-lane-days">${dates.map(date=>`<div class="habit-lane-date ${date===today?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${parseDate(date).getDate()}</span></div>`).join("")}</div></div>`;
   const rows=DASHBOARD_ACTIONS.map(action=>{const streak=dashboardActionStreak(action);return`<article class="habit-lane"><div class="habit-lane-name"><span class="action-symbol">${icon(action.icon)}</span><div><strong>${escapeHtml(action.label)}</strong><small>${streak?`${icon("trend")} ${streak} day${streak===1?"":"s"}`:"Start a streak"}</small></div></div><div class="habit-lane-days">${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<button class="habit-lane-day ${status} ${date===today?"today":""}" data-today-date="${date}" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}"><span>${dashboardStateIcon(status)}</span><small>${dashboardStateLabel(status)}</small></button>`;}).join("")}</div></article>`;}).join("");
-  return `<div class="habit-lanes ${dashboardFocusMode?"focus-mode":""}">${header}${rows}</div>`;
+  return `<div class="habit-lanes">${header}${rows}</div>`;
 }
 
 function dashboardPulseMarkup(cycle){
   const week=cycleWeeks(cycle)[dashboardWeek],dates=datesInRange(week.start,week.end),today=dateKey(new Date());
   const totals=dates.reduce((sum,date)=>{if(isFuture(date))return sum;DASHBOARD_ACTIONS.forEach(action=>{const status=dashboardActionStatus(action,date);if(["not-scheduled","upcoming"].includes(status))return;sum.eligible++;if(status==="completed")sum.completed++;});return sum;},{completed:0,eligible:0});
-  const bars=dates.map(date=>{const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date)),eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status)).length,completed=statuses.filter(status=>status==="completed").length,value=eligible?Math.round(completed/eligible*100):0;return`<div class="pulse-day ${date===today?"today":""} ${isFuture(date)?"future":""}"><div><i style="--value:${value}"></i></div><strong>${displayDate(date,{weekday:"narrow"})}</strong><span>${isFuture(date)?"—":`${completed}/${eligible}`}</span></div>`;}).join("");
+  const totalPercent=totals.eligible?Math.round(totals.completed/totals.eligible*100):0;
+  const bars=dates.map(date=>{const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date)),eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status)).length,completed=statuses.filter(status=>status==="completed").length,value=eligible?Math.round(completed/eligible*100):0;return`<div class="pulse-day ${date===today?"today":""} ${isFuture(date)?"future":""}"><div><i style="--value:${value}"></i></div><strong>${displayDate(date,{weekday:"narrow"})}</strong><span>${isFuture(date)?"—":`${value}%`}</span></div>`;}).join("");
   const pending=DASHBOARD_ACTIONS.find(action=>["pending","partial"].includes(dashboardActionStatus(action,today)));
-  const next=pending?`<span class="next-action-icon">${icon(pending.icon)}</span><div><p class="kicker">NEXT BEST ACTION</p><h3>${escapeHtml(pending.label)}</h3><p>Complete this next to build today’s momentum.</p></div>`:`<span class="next-action-icon complete">${icon("check")}</span><div><p class="kicker">TODAY’S SIGNAL</p><h3>${isFuture(week.start)?"This week is upcoming":"You’re clear for now"}</h3><p>${isFuture(week.start)?"Return when this week begins.":"No pending dashboard action needs attention."}</p></div>`;
-  return `<section class="dashboard-pulse-grid"><article class="weekly-pulse card"><div class="pulse-copy"><p class="kicker">WEEKLY MOMENTUM</p><h3>${totals.completed} of ${totals.eligible}</h3><p>eligible actions completed</p></div><div class="pulse-bars">${bars}</div></article><article class="next-action-card card">${next}</article></section>`;
+  const next=pending?`<span class="next-action-icon">${icon(pending.icon)}</span><div><p class="kicker">NEXT BEST ACTION</p><h3>${escapeHtml(pending.label)}</h3><p>Complete this next to build today’s momentum.</p></div>`:`<span class="next-action-icon complete">${icon("check")}</span><div><p class="kicker">MOMENTUM COMPLETE</p><h3>${isFuture(week.start)?"This week is upcoming":"All clear for now"}</h3><p>${isFuture(week.start)?"Return when this week begins.":"No pending action needs attention."}</p></div>`;
+  return `<section class="dashboard-pulse-grid"><article class="weekly-pulse card"><div class="pulse-copy"><p class="kicker">WEEKLY MOMENTUM</p><h3>${totalPercent}%</h3><p>eligible actions completed</p></div><div class="pulse-bars">${bars}</div></article><article class="next-action-card card">${next}</article></section>`;
 }
 
 function dailyActionCardsMarkup(date){
@@ -226,19 +226,17 @@ function dailyActionCardsMarkup(date){
     const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),today=date===dateKey(new Date()),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
     const selected=action.activity&&status==="completed"?(entry.activity||""):(saved||(status==="completed"?"completed":status==="missed"?"missed":status==="not-scheduled"?"not-applicable":""));
     const options=action.activity?[["","Choose status"],["swimming","Completed · Swimming"],["walking","Completed · Walking"],["missed","Not completed"],["not-applicable","Not applicable"]]:[["","Choose status"],["completed","Completed"],["missed","Not completed"],["not-applicable","Not applicable"]];
-    const control=future?`<span class="action-upcoming-label">Upcoming</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}: ${escapeHtml(action.label)}" ${status==="completed"?"disabled":""}>${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
+    const control=future?`<span class="action-upcoming-label">Upcoming</span>`:status==="not-scheduled"?`<span class="action-upcoming-label">Not applicable</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}: ${escapeHtml(action.label)}" ${status==="completed"?"disabled":""}>${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
     return `<article class="daily-action-card ${status} group-${action.group}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${dashboardStateLabel(status)}</p></div>${control}</article>`;
   }).join("");
 }
 
 function renderDashboard(){
   const cycle=currentCycle(),week=cycleWeeks(cycle)[dashboardWeek];
-  const currentWeekSelected=dashboardWeek===cycle.week-1;
-  if(!currentWeekSelected)dashboardFocusMode=false;
   $("#dashboardContent").innerHTML=`
     <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardFocusMarkup(cycle)}</div>
     ${dashboardPulseMarkup(cycle)}
-    <section class="card command-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} · HABIT LANES</p><h2>Consistency, action by action</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Missed <span class="legend-dot na"></span> Not applicable</p></div><button class="focus-mode-button ${dashboardFocusMode?"active":""}" data-dashboard-focus ${currentWeekSelected?"":"disabled"}>${icon(dashboardFocusMode?"cycle":"target")} ${dashboardFocusMode?"Show full week":"Focus on today"}</button></div>${habitLanesMarkup(cycle)}</section>`;
+    <section class="card command-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} · HABIT LANES</p><h2>Consistency, action by action</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Missed <span class="legend-dot na"></span> Not applicable</p></div></div>${habitLanesMarkup(cycle)}</section>`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
@@ -274,8 +272,8 @@ function renderToday(){
   const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
   $("#todayContent").innerHTML=`
     ${sectionQuoteMarkup("Today","Own this day. Build the life you want.","One focused action at a time—quiet progress becomes lasting change.","sunrise")}
-    <div class="today-page-grid">${todayCalendarMarkup(cycle)}<div class="today-main-column"><div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
-    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Green is complete, red is missed, and yellow needs attention.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section></div></div>`;
+    <div class="today-page-grid"><div class="today-main-column"><div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
+    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Green is complete, red is missed, and yellow means not applicable.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section></div></div>`;
 }
 function habitGroupMarkup(category,habits,date){return`<section><div class="habit-group-title">${icon(categoryIcon(category))}<span>${escapeHtml(CATEGORY_LABELS[category]||category)}</span></div><div class="habit-stack">${habits.map(h=>habitCardMarkup(h,date)).join("")}</div></section>`;}
 function habitCardMarkup(habit,date){
@@ -299,10 +297,9 @@ function retentionCalendarMarkup(cycle,habit){
 
 function renderCycle(){
   const cycle=cycleByIndex(selectedCycleIndex),metrics=retentionMetrics(),habit=metrics.habit;
-  const cycleCompleted=habit?datesInRange(cycle.start,cycle.end).filter(key=>!isFuture(key)&&completionFraction(habit,entryFor(state,habit.id,key))===1).length:0;
   const actions=`<div class="cycle-nav"><button data-cycle-shift="-1" ${selectedCycleIndex<=0?"disabled":""} aria-label="Previous month">${icon("arrowLeft")}</button><button data-cycle-shift="1" ${selectedCycleIndex>=currentCycle().index?"disabled":""} aria-label="Next month">${icon("arrowRight")}</button></div>`;
   $("#cycleContent").innerHTML=`${sectionQuoteMarkup("Semen Retention","Master the moment. Strengthen your resolve.","A private record of consistency—without claims, pressure, or judgement.","shield")}
-    <section class="retention-hero"><div class="retention-hero-art">${icon("shield")}<span>${icon("check")}</span></div><div><p class="kicker">CURRENT STREAK</p><strong>${metrics.current}</strong><h2>day${metrics.current===1?"":"s"} maintained</h2><p>Longest streak: ${metrics.longest} days</p></div><div class="retention-cycle-count"><strong>${cycleCompleted}</strong><span>days maintained<br>in this calendar</span></div></section>
+    <section class="retention-hero"><div class="retention-hero-art">${icon("shield")}<span>${icon("check")}</span><b>${icon("spark")}</b></div><div><p class="kicker">CURRENT STREAK</p><strong>${metrics.current}</strong><h2>day${metrics.current===1?"":"s"} maintained</h2><p>Longest streak: ${metrics.longest} days</p></div></section>
     <section class="card retention-calendar-card"><div class="section-heading"><div><p class="kicker">PRIVATE CALENDAR</p><h2>${formatRange(cycle.start,cycle.end)}</h2><p>Select any completed or past day to update it.</p></div>${actions}</div>${habit?retentionCalendarMarkup(cycle,habit):`<div class="empty-state"><h2>Private goal unavailable</h2></div>`}<div class="retention-legend"><span><i class="maintained"></i> Maintained</span><span><i class="broken"></i> Streak broken</span><span><i class="pending"></i> Today pending</span></div></section>`;
 }
 
@@ -463,13 +460,12 @@ document.addEventListener("click",event=>{
   const close=event.target.closest("[data-close-dialog]");if(close){closeDialog(close.dataset.closeDialog);return;}
   const dashboardDate=event.target.closest("[data-dashboard-date]");if(dashboardDate){selectedDate=dashboardDate.dataset.dashboardDate;dashboardWeek=Math.max(0,Math.min(3,cycleForDate(selectedDate,state.settings.cycleAnchor).week-1));renderDashboard();renderIconSlots($("#dashboardView"));setTimeout(()=>$("#dailyActionBoard")?.scrollIntoView({behavior:"smooth",block:"start"}),20);return;}
   const todayDate=event.target.closest("[data-today-date]");if(todayDate){selectedDate=todayDate.dataset.todayDate;renderToday();renderIconSlots($("#todayView"));return;}
-  const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);dashboardFocusMode=false;renderDashboard();renderIconSlots($("#dashboardView"));return;}
-  const focusMode=event.target.closest("[data-dashboard-focus]");if(focusMode){dashboardFocusMode=!dashboardFocusMode;renderDashboard();renderIconSlots($("#dashboardView"));return;}
+  const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);renderDashboard();renderIconSlots($("#dashboardView"));return;}
   const dashboardToggle=event.target.closest("[data-dashboard-toggle]");if(dashboardToggle){toggleDashboardAction(dashboardToggle.dataset.dashboardToggle,dashboardToggle.dataset.date);return;}
   const toggle=event.target.closest("[data-toggle-habit]");if(toggle){toggleHabit(toggle.dataset.toggleHabit,toggle.dataset.date);return;}
   const taskToggle=event.target.closest("[data-toggle-task]");if(taskToggle){store.update(s=>{const task=s.oneTimeTasks.find(t=>t.id===taskToggle.dataset.toggleTask);if(task)task.completed=!task.completed;});syncState();render();return;}
   const select=event.target.closest("[data-select-date]");if(select){selectedDate=select.dataset.selectDate;render();showView("today");closeDialog("habitDialog");return;}
-  const shift=event.target.closest("[data-shift-date]");if(shift){selectedDate=dateKey(addDays(selectedDate,Number(shift.dataset.shiftDate)));renderToday();renderIconSlots($("#todayView"));return;}
+  const shift=event.target.closest("[data-shift-date]");if(shift){const anchor=state.settings.cycleAnchor,next=dateKey(addDays(selectedDate,Number(shift.dataset.shiftDate)));selectedDate=daysBetween(anchor,next)<0?anchor:next;renderToday();renderIconSlots($("#todayView"));return;}
   const week=event.target.closest("[data-open-week]");if(week){const base=activeView==="cycle"?cycleByIndex(selectedCycleIndex):currentCycle();selectedDate=dateKey(addDays(base.start,Number(week.dataset.openWeek)*7));render();showView("today");return;}
   const retentionDate=event.target.closest("[data-retention-date]");if(retentionDate){toggleHabit("semen-retention",retentionDate.dataset.retentionDate);return;}
   const cycleShift=event.target.closest("[data-cycle-shift]");if(cycleShift){selectedCycleIndex+=Number(cycleShift.dataset.cycleShift);if(activeView==="history"){renderHistory();renderIconSlots($("#historyView"));}else{renderCycle();renderIconSlots($("#cycleView"));}return;}

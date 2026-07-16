@@ -89,6 +89,9 @@ export function isScheduled(habit, date) {
   const key = dateKey(date);
   if (habit.startDate && daysBetween(habit.startDate, key) < 0) return false;
   if (habit.archivedAt && daysBetween(key, habit.archivedAt) <= 0) return false;
+  // Sunday is a positive rest/spiritual day. Only the temple ritual and
+  // private goal remain eligible; other routines are not scheduled.
+  if (parseDate(key).getDay() === 0 && !["temple-ritual", "semen-retention"].includes(habit.id)) return false;
   return (habit.schedule || []).includes(parseDate(key).getDay());
 }
 
