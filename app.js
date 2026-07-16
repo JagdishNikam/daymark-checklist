@@ -240,7 +240,6 @@ function renderDashboard(){
   const cycle=currentCycle(),week=cycleWeeks(cycle)[dashboardWeek];
   $("#dashboardContent").innerHTML=`
     <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardFocusMarkup(cycle)}</div>
-    ${dashboardPulseMarkup(cycle)}
     <section class="card command-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} · HABIT LANES</p><h2>Consistency, action by action</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Missed <span class="legend-dot na"></span> Not applicable</p></div></div>${habitLanesMarkup(cycle)}</section>`;
 }
 

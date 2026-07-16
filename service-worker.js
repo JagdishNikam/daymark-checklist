@@ -1,5 +1,5 @@
-const CACHE = "daymark-v35-daily-orbs";
-const VERSION = "20260716-19";
+const CACHE = "daymark-v36-no-weekly-momentum";
+const VERSION = "20260716-20";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
