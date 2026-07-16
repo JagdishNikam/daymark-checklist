@@ -355,3 +355,26 @@ html,body{background:#0b0a14;color:var(--text)}.ambient-bg{background:radial-gra
 .focus-mode-button{display:none}
 @media(max-width:760px){#todayContent .today-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:18px;row-gap:16px}}
 @media(max-width:520px){#todayContent .today-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;column-gap:14px;row-gap:14px}}
+
+/* Momentum rings and high-contrast dashboard status marks */
+.dashboard-pulse-grid{display:block;width:100%;margin:15px 0}
+.weekly-pulse{width:100%;min-height:170px;display:grid;grid-template-columns:minmax(220px,.62fr) minmax(0,1.38fr);align-items:center;gap:30px;padding:24px 30px}
+.pulse-copy h3{margin:0;color:#f6f3ff;font:800 28px "Manrope",sans-serif;letter-spacing:-1px}
+.pulse-copy>p:last-child{margin:3px 0 0;color:#9a94ad;font-size:9px}
+.pulse-overall{display:flex;align-items:center;gap:18px}
+.pulse-ring{--value:0;width:56px;height:56px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#61d6ff calc(var(--value)*1%),#252039 0);position:relative;box-shadow:0 0 18px rgba(97,214,255,.15)}
+.pulse-ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#121024}
+.pulse-ring span{position:relative;z-index:1;color:#f6f3ff;font-size:10px;font-weight:900}
+.pulse-ring.large{width:88px;height:88px;background:conic-gradient(#b78cff calc(var(--value)*1%),#30284a 0);box-shadow:0 0 24px rgba(183,140,255,.2)}
+.pulse-ring.large::after{inset:7px;background:#17122a}
+.pulse-ring.large span{font-size:15px}
+.pulse-circles{display:grid;grid-template-columns:repeat(7,minmax(55px,1fr));align-items:center;gap:15px}
+.pulse-day{display:grid;justify-items:center;gap:5px;color:#9a94ad}
+.pulse-day strong{font-size:9px;color:#d9d4e6}.pulse-day small{font-size:8px;color:#77718a}
+.pulse-day.today .pulse-ring{box-shadow:0 0 0 2px #2ee69d,0 0 20px rgba(46,230,157,.25)}
+.pulse-day.today strong{color:#fff}.pulse-day.future{opacity:.35}
+.habit-lane-day .status-glyph{width:27px;height:27px}
+.habit-lane-day .status-glyph .icon{width:15px;height:15px}
+.habit-lane-day.completed .status-glyph{background:#174d3a;border-color:#174d3a;color:#fff}
+.habit-lane-day.missed .status-glyph{background:#641f2b;border-color:#641f2b;color:#fff}
+@media(max-width:760px){.weekly-pulse{grid-template-columns:1fr;gap:20px;padding:20px}.pulse-circles{gap:7px}.pulse-ring{width:43px;height:43px}.pulse-ring::after{inset:4px}.pulse-ring span{font-size:8px}.pulse-ring.large{width:72px;height:72px}.pulse-ring.large::after{inset:6px}.pulse-ring.large span{font-size:12px}}

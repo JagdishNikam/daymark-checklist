@@ -215,12 +215,17 @@ function dashboardPulseMarkup(cycle){
   const week=cycleWeeks(cycle)[dashboardWeek],dates=datesInRange(week.start,week.end),today=dateKey(new Date());
   const totals=dates.reduce((sum,date)=>{if(isFuture(date))return sum;DASHBOARD_ACTIONS.forEach(action=>{const status=dashboardActionStatus(action,date);if(["not-scheduled","upcoming"].includes(status))return;sum.eligible++;if(status==="completed")sum.completed++;});return sum;},{completed:0,eligible:0});
   const totalPercent=totals.eligible?Math.round(totals.completed/totals.eligible*100):0;
+  const circles=dates.map(date=>{const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date)),eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status)).length,completed=statuses.filter(status=>status==="completed").length,value=eligible?Math.round(completed/eligible*100):0;return`<div class="pulse-day ${date===today?"today":""} ${isFuture(date)?"future":""}"><div class="pulse-ring" style="--value:${value}"><span>${isFuture(date)?"—":`${value}%`}</span></div><strong>${displayDate(date,{weekday:"narrow"})}</strong><small>${parseDate(date).getDate()}</small></div>`;}).join("");
+  return `<section class="dashboard-pulse-grid"><article class="weekly-pulse card"><div class="pulse-copy"><p class="kicker">WEEKLY MOMENTUM</p><div class="pulse-overall"><div class="pulse-ring large" style="--value:${totalPercent}"><span>${totalPercent}%</span></div><div><h3>${totalPercent}%</h3><p>eligible actions completed</p></div></div></div><div class="pulse-circles">${circles}</div></article></section>`;
+}
+/*
   const bars=dates.map(date=>{const statuses=DASHBOARD_ACTIONS.map(action=>dashboardActionStatus(action,date)),eligible=statuses.filter(status=>!["not-scheduled","upcoming"].includes(status)).length,completed=statuses.filter(status=>status==="completed").length,value=eligible?Math.round(completed/eligible*100):0;return`<div class="pulse-day ${date===today?"today":""} ${isFuture(date)?"future":""}"><div><i style="--value:${value}"></i></div><strong>${displayDate(date,{weekday:"narrow"})}</strong><span>${isFuture(date)?"—":`${value}%`}</span></div>`;}).join("");
   const pending=DASHBOARD_ACTIONS.find(action=>["pending","partial"].includes(dashboardActionStatus(action,today)));
   const next=pending?`<span class="next-action-icon">${icon(pending.icon)}</span><div><p class="kicker">NEXT BEST ACTION</p><h3>${escapeHtml(pending.label)}</h3><p>Complete this next to build today’s momentum.</p></div>`:`<span class="next-action-icon complete">${icon("check")}</span><div><p class="kicker">MOMENTUM COMPLETE</p><h3>${isFuture(week.start)?"This week is upcoming":"All clear for now"}</h3><p>${isFuture(week.start)?"Return when this week begins.":"No pending action needs attention."}</p></div>`;
   return `<section class="dashboard-pulse-grid"><article class="weekly-pulse card"><div class="pulse-copy"><p class="kicker">WEEKLY MOMENTUM</p><h3>${totalPercent}%</h3><p>eligible actions completed</p></div><div class="pulse-bars">${bars}</div></article><article class="next-action-card card">${next}</article></section>`;
 }
 
+*/
 function dailyActionCardsMarkup(date){
   return DASHBOARD_ACTIONS.map(action=>{
     const habit=state.habits.find(item=>item.id===action.habitId),status=dashboardActionStatus(action,date),future=isFuture(date),today=date===dateKey(new Date()),entry=entryFor(state,action.habitId,date),saved=state.actionStates?.[date]?.[action.key];
