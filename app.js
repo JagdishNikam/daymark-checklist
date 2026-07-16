@@ -203,9 +203,8 @@ function dailyActionCardsMarkup(date){
 function renderDashboard(){
   const cycle=currentCycle(),week=cycleWeeks(cycle)[dashboardWeek];
   $("#dashboardContent").innerHTML=`
-    <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardScoreCardsMarkup(cycle,week)}</div>
-    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} OVERVIEW</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>
-    ${dashboardFocusMarkup(cycle)}`;
+    <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardFocusMarkup(cycle)}</div>
+    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} OVERVIEW</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
