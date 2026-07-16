@@ -183,3 +183,18 @@ body{background:#06101d}
 #todayContent .current-complete-button{min-width:98px;min-height:36px;border-radius:10px;font-size:9px}
 #todayContent .action-upcoming-label{min-width:78px}
 @media(max-width:600px){#todayContent .daily-action-card{min-height:62px;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;padding:7px 8px 7px 12px}#todayContent .daily-action-icon{width:38px;height:38px;border-radius:11px}#todayContent .action-status-select{width:112px;min-height:34px}#todayContent .current-complete-button{min-width:86px;min-height:34px}}
+
+/* Grouped weekly routine board */
+.action-matrix{min-width:840px;grid-template-columns:minmax(250px,1.8fr) repeat(7,minmax(58px,1fr))}
+.matrix-group{grid-column:1/-1;min-height:35px;display:flex;align-items:center;gap:8px;padding:7px 13px;border-bottom:1px solid rgba(225,236,248,.16);background:linear-gradient(90deg,rgba(104,129,158,.19),rgba(18,28,43,.72) 48%,rgba(18,28,43,.62));color:#dce8f5;font-size:9px;font-weight:900;letter-spacing:1.25px;text-transform:uppercase;box-shadow:inset 0 1px rgba(255,255,255,.055)}
+.matrix-group .icon{width:15px;height:15px}
+.matrix-group.group-morning{color:#ffbc72;background:linear-gradient(90deg,rgba(255,157,80,.16),rgba(18,28,43,.7) 48%)}
+.matrix-group.group-spiritual{color:#c7a8ff;background:linear-gradient(90deg,rgba(154,115,255,.16),rgba(18,28,43,.7) 48%)}
+.matrix-group.group-nutrition{color:#66e0b3;background:linear-gradient(90deg,rgba(52,210,151,.15),rgba(18,28,43,.7) 48%)}
+.matrix-group.group-care{color:#7dcaf4;background:linear-gradient(90deg,rgba(62,170,229,.15),rgba(18,28,43,.7) 48%)}
+.matrix-action.group-morning .action-symbol,#todayContent .group-morning .daily-action-icon{color:#ffbc72;background:linear-gradient(145deg,rgba(255,157,80,.2),rgba(69,48,38,.24))}
+.matrix-action.group-spiritual .action-symbol,#todayContent .group-spiritual .daily-action-icon{color:#c7a8ff;background:linear-gradient(145deg,rgba(154,115,255,.2),rgba(55,43,82,.25))}
+.matrix-action.group-nutrition .action-symbol,#todayContent .group-nutrition .daily-action-icon{color:#66e0b3;background:linear-gradient(145deg,rgba(52,210,151,.18),rgba(35,70,62,.24))}
+.matrix-action.group-care .action-symbol,#todayContent .group-care .daily-action-icon{color:#7dcaf4;background:linear-gradient(145deg,rgba(62,170,229,.18),rgba(35,61,80,.25))}
+.matrix-action strong{font-size:11px;line-height:1.25}
+@media(max-width:600px){.action-matrix{min-width:780px;grid-template-columns:minmax(220px,1.7fr) repeat(7,minmax(56px,1fr))}.matrix-group{min-height:33px;padding-left:11px}}

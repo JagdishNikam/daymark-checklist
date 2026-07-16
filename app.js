@@ -14,22 +14,27 @@ let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cyc
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
 let inputTimer;
 
+const DASHBOARD_GROUPS = {
+  morning:{label:"Morning Foundation",icon:"sunrise"},
+  spiritual:{label:"Spiritual Routine",icon:"temple"},
+  nutrition:{label:"Nutrition & Hydration",icon:"nutrition"},
+  care:{label:"Recovery & Personal Care",icon:"hair"}
+};
+
 const DASHBOARD_ACTIONS = [
-  {key:"wake",label:"Wake up at 6:30",habitId:"wake-630",icon:"sunrise"},
-  {key:"orange",label:"Orange",habitId:"orange",icon:"orange"},
-  {key:"temple",label:"Temple",habitId:"temple-ritual",subtaskIds:["visited","shiva-water"],icon:"temple"},
-  {key:"gajara",label:"Gajara",habitId:"temple-ritual",subtaskIds:["parvati-gajra"],icon:"spark"},
-  {key:"devpuja",label:"Dev Puja",habitId:"dev-puja",icon:"spark"},
-  {key:"coffee",label:"Black coffee",habitId:"black-coffee",icon:"coffee"},
-  {key:"workout",label:"Workout",habitId:"workout",icon:"dumbbell"},
-  {key:"physio",label:"Back physiotherapy",habitId:"back-physio",icon:"physio"},
-  {key:"kegel1",label:"Kegel 1",habitId:"kegel",subtaskIds:["morning"],icon:"activity"},
-  {key:"soya",label:"Protein soya chunks",habitId:"soya-rice",icon:"bowl"},
-  {key:"amla",label:"Amla drink",habitId:"avla-drink",icon:"leaf"},
-  {key:"paneer",label:"Paneer bhurji",habitId:"protein-lunch",icon:"utensils"},
-  {key:"kegel2",label:"Kegel 2",habitId:"kegel",subtaskIds:["evening"],icon:"activity"},
-  {key:"beetroot",label:"Beetroot juice",habitId:"beetroot-juice",icon:"drop"},
-  {key:"night",label:"Night exercise",habitId:"evening-activity",icon:"footsteps",activity:true}
+  {key:"wake",label:"Wake up between 6:30–7:00 AM",habitId:"wake-630",icon:"sunrise",group:"morning",timeLabel:"6:30–7:00 AM"},
+  {key:"coffee",label:"Black coffee",habitId:"black-coffee",icon:"coffee",group:"morning"},
+  {key:"temple",label:"Go to temple",habitId:"temple-ritual",subtaskIds:["visited"],icon:"temple",group:"spiritual"},
+  {key:"gajara",label:"Offer Gajra to Goddess Parvati",habitId:"temple-ritual",subtaskIds:["parvati-gajra"],icon:"spark",group:"spiritual"},
+  {key:"devpuja",label:"Dev Puja at home",habitId:"dev-puja",icon:"spark",group:"spiritual"},
+  {key:"amla",label:"Amla juice",habitId:"avla-drink",icon:"leaf",group:"nutrition"},
+  {key:"beetroot",label:"Beetroot juice",habitId:"beetroot-juice",icon:"drop",group:"nutrition"},
+  {key:"paneer",label:"Protein lunch",habitId:"protein-lunch",icon:"utensils",group:"nutrition"},
+  {key:"protein-dinner",label:"Protein dinner",habitId:"protein-dinner",icon:"bowl",group:"nutrition"},
+  {key:"water-1",label:"Water intake 1",habitId:"water-intake-1",icon:"drop",group:"nutrition"},
+  {key:"water-2",label:"Water intake 2",habitId:"water-intake-2",icon:"drop",group:"nutrition"},
+  {key:"hair-care",label:"Hair care",habitId:"hair-care",icon:"hair",group:"care"},
+  {key:"physio",label:"Back physiotherapy",habitId:"back-physio",icon:"physio",group:"care"}
 ];
 
 const $ = selector => document.querySelector(selector);
@@ -130,7 +135,8 @@ function compactCalendarMarkup(cycle,selected){
 
 function actionMatrixMarkup(cycle){
   const week=cycleWeeks(cycle)[cycle.week-1],dates=datesInRange(week.start,week.end);
-  return `<div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day ${date===dateKey(new Date())?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("")}</div></div>`;
+  const rows=Object.entries(DASHBOARD_GROUPS).map(([group,meta])=>`<div class="matrix-group group-${group}">${icon(meta.icon)}<span>${escapeHtml(meta.label)}</span></div>${DASHBOARD_ACTIONS.filter(action=>action.group===group).map(action=>`<div class="matrix-action group-${group}"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("")}`).join("");
+  return `<div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day ${date===dateKey(new Date())?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${rows}</div></div>`;
 }
 
 function dailyActionCardsMarkup(date){
@@ -139,7 +145,7 @@ function dailyActionCardsMarkup(date){
     const selected=action.activity&&status==="completed"?(entry.activity||""):(saved||(status==="completed"?"completed":status==="missed"?"missed":status==="not-scheduled"?"not-applicable":""));
     const options=action.activity?[["","Choose status"],["swimming","Completed · Swimming"],["walking","Completed · Walking"],["missed","Not completed"],["not-applicable","Not applicable"]]:[["","Choose status"],["completed","Completed"],["missed","Not completed"],["not-applicable","Not applicable"]];
     const control=future?`<span class="action-upcoming-label">Upcoming</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}: ${escapeHtml(action.label)}" ${status==="completed"?"disabled":""}>${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${options.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
-    return `<article class="daily-action-card ${status}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${habit?formatTime(habit.time):"Anytime"} · ${dashboardStateLabel(status)}</p></div>${control}</article>`;
+    return `<article class="daily-action-card ${status} group-${action.group}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${action.timeLabel||habit?escapeHtml(action.timeLabel||formatTime(habit.time)):"Anytime"} · ${dashboardStateLabel(status)}</p></div>${control}</article>`;
   }).join("");
 }
 
