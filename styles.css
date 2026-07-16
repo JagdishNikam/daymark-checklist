@@ -286,3 +286,18 @@ html,body{background:#000;color:#fff}.ambient-bg{background:#000}.ambient-bg spa
 .habit-card,.history-card,.week-card,.settings-card,.stat-card{color:#fff}.habit-meta,.privacy-copy,.autosave-note{color:#888}.state-badge.completed{color:#2ee69d}.state-badge.missed{color:#ff5b68}.state-badge.pending,.state-badge.partial,.state-badge.not-scheduled{color:#ffc247;background:rgba(255,194,71,.08)}.heat-day{border-color:#202020;background:#050505;color:#aaa}.heat-day.level-high{background:rgba(46,230,157,.18);color:#2ee69d}.heat-day.level-mid{background:rgba(255,194,71,.15);color:#ffc247}.heat-day.missed{background:rgba(255,91,104,.16);color:#ff5b68}.heat-day.future{background:#030303;color:#555}
 dialog{border-color:#252525;background:#050505;color:#fff}dialog::backdrop{background:rgba(0,0,0,.8)}.close-button,.button{border-color:#303030;background:#0a0a0a;color:#fff}.button.primary,.primary-button{background:#fff;color:#000;box-shadow:none}
 @media(max-width:760px){#todayContent .today-action-grid{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Dashboard inspiration and four-week calendar */
+.dashboard-top-row .visual-header{min-height:228px;padding-bottom:20px}.dashboard-top-row .visual-header h1{color:#ff5b68;text-shadow:0 0 24px rgba(255,91,104,.13)}.dashboard-top-row .visual-header>p:last-of-type{color:#eee}
+.dashboard-week-calendar{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:18px}
+.dashboard-week-calendar button{position:relative;display:grid;gap:3px;min-width:0;padding:9px 10px;border:1px solid #272727;border-radius:10px;background:#090909;color:#8d8d8d;text-align:left;transition:border-color .18s ease,background .18s ease,color .18s ease,transform .18s ease}
+.dashboard-week-calendar button:hover{border-color:#555;color:#fff;transform:translateY(-1px)}.dashboard-week-calendar span{font-size:9px;font-weight:900}.dashboard-week-calendar small{overflow:hidden;color:#626262;font-size:7px;white-space:nowrap;text-overflow:ellipsis}.dashboard-week-calendar i{position:absolute;right:8px;top:9px;width:6px;height:6px;border:1px solid #555;border-radius:50%}
+.dashboard-week-calendar button.current i{border-color:#2ee69d;background:#2ee69d;box-shadow:0 0 9px rgba(46,230,157,.45)}.dashboard-week-calendar button.active{border-color:#ffb347;background:rgba(255,179,71,.09);color:#ffc36e;box-shadow:inset 0 -2px #ffb347}.dashboard-week-calendar button.active small{color:#d69a4c}.dashboard-week-calendar button.active.current i{border-color:#2ee69d;background:#2ee69d}
+.matrix-action strong{color:#ffb347}.matrix-action:hover strong{color:#ffd08d}.dashboard-top-row .dashboard-score-panel{min-height:228px}
+@media(max-width:1050px){.dashboard-top-row .visual-header,.dashboard-top-row .dashboard-score-panel{min-height:auto}.dashboard-top-row .visual-header{padding-bottom:20px}}
+@media(max-width:600px){.dashboard-top-row .visual-header{min-height:216px}.dashboard-top-row .visual-header h1{max-width:75%;font-size:27px}.dashboard-week-calendar{gap:4px;margin-top:15px}.dashboard-week-calendar button{padding:8px 6px}.dashboard-week-calendar small{display:none}.dashboard-week-calendar i{right:6px;top:8px;width:5px;height:5px}}
+
+/* Compact dashboard status icons */
+.matrix-state .status-glyph,.matrix-state.completed .status-glyph,.matrix-state.missed .status-glyph,.matrix-state.not-scheduled .status-glyph{width:22px;height:22px;border-width:1.5px}
+.matrix-state .status-glyph .icon{width:12px;height:12px;stroke-width:3}
+.matrix-state .status-glyph.na-mark{font-size:6px;letter-spacing:-.2px}
