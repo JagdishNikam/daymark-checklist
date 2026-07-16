@@ -1,5 +1,5 @@
-const CACHE = "daymark-v28-momentum-rings";
-const VERSION = "20260716-12";
+const CACHE = "daymark-v29-midnight-neon";
+const VERSION = "20260716-13";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
