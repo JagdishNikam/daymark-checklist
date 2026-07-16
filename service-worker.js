@@ -1,5 +1,5 @@
-const CACHE = "daymark-v18-grouped-routine";
-const VERSION = "20260716-2";
+const CACHE = "daymark-v20-black-gold";
+const VERSION = "20260716-4";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",

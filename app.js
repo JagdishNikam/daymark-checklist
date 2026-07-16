@@ -14,13 +14,6 @@ let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cyc
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
 let inputTimer;
 
-const DASHBOARD_GROUPS = {
-  morning:{label:"Morning Foundation",icon:"sunrise"},
-  spiritual:{label:"Spiritual Routine",icon:"temple"},
-  nutrition:{label:"Nutrition & Hydration",icon:"nutrition"},
-  care:{label:"Recovery & Personal Care",icon:"hair"}
-};
-
 const DASHBOARD_ACTIONS = [
   {key:"wake",label:"Wake up between 6:30–7:00 AM",habitId:"wake-630",icon:"sunrise",group:"morning",timeLabel:"6:30–7:00 AM"},
   {key:"coffee",label:"Black coffee",habitId:"black-coffee",icon:"coffee",group:"morning"},
@@ -74,7 +67,7 @@ function render(){
 
 function applyTheme(){
   document.body.classList.add("dark");
-  document.querySelector('meta[name="theme-color"]').content="#070a12";
+  document.querySelector('meta[name="theme-color"]').content="#090a09";
 }
 
 function renderSidebar(){
@@ -135,8 +128,32 @@ function compactCalendarMarkup(cycle,selected){
 
 function actionMatrixMarkup(cycle){
   const week=cycleWeeks(cycle)[cycle.week-1],dates=datesInRange(week.start,week.end);
-  const rows=Object.entries(DASHBOARD_GROUPS).map(([group,meta])=>`<div class="matrix-group group-${group}">${icon(meta.icon)}<span>${escapeHtml(meta.label)}</span></div>${DASHBOARD_ACTIONS.filter(action=>action.group===group).map(action=>`<div class="matrix-action group-${group}"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("")}`).join("");
+  const rows=DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("");
   return `<div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day ${date===dateKey(new Date())?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${rows}</div></div>`;
+}
+
+function dashboardActionScore(start,end=start){
+  let earned=0,eligible=0;
+  datesInRange(start,end).filter(date=>!isFuture(date)).forEach(date=>{
+    DASHBOARD_ACTIONS.forEach(action=>{
+      const status=dashboardActionStatus(action,date);
+      if(["not-scheduled","upcoming"].includes(status))return;
+      eligible++;
+      if(status==="completed")earned++;
+      else if(status==="partial")earned+=.5;
+    });
+  });
+  return {score:eligible?Math.round(earned/eligible*100):null,earned,eligible};
+}
+
+function dashboardScoreCardsMarkup(cycle,week){
+  const today=dateKey(new Date());
+  const cards=[
+    {label:"Today score",meta:displayDate(today,{weekday:"short",day:"numeric"}),icon:"target",stats:dashboardActionScore(today)},
+    {label:"Week score",meta:`Week ${cycle.week}`,icon:"trend",stats:dashboardActionScore(week.start,week.end)},
+    {label:"Month score",meta:"28-day cycle",icon:"cycle",stats:dashboardActionScore(cycle.start,cycle.end)}
+  ];
+  return `<section class="dashboard-score-panel" aria-label="Current improvement scores">${cards.map(card=>`<article class="dashboard-score-item"><span class="dashboard-score-icon">${icon(card.icon)}</span><div><span>${escapeHtml(card.label)}</span><strong>${scoreText(card.stats.score)}</strong><small>${escapeHtml(card.meta)}</small></div></article>`).join("")}</section>`;
 }
 
 function dailyActionCardsMarkup(date){
@@ -152,7 +169,7 @@ function dailyActionCardsMarkup(date){
 function renderDashboard(){
   const cycle=currentCycle(),week=cycleWeeks(cycle)[cycle.week-1];
   $("#dashboardContent").innerHTML=`
-    <header class="visual-header"><p class="kicker">WEEK ${cycle.week} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Small disciplines, repeated daily, create a life you’re proud of.</h1><p>Focus on today. Let consistency build the result.</p></header>
+    <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${cycle.week} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Discipline today.<br>Freedom tomorrow.</h1><p>Small actions. Strong identity. Exceptional life.</p></header>${dashboardScoreCardsMarkup(cycle,week)}</div>
     <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">CURRENT WEEK</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>`;
 }
 
