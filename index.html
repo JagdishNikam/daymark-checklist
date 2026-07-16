@@ -11,22 +11,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20260716-7" />
+    <link rel="stylesheet" href="styles.css?v=20260716-9" />
     <title>Daymark — 28 Day Improvement Tracker</title>
   </head>
   <body class="dark">
     <div class="ambient-bg" aria-hidden="true"><span></span><span></span><span></span></div>
     <div class="app-shell">
       <aside class="sidebar" aria-label="Application sidebar">
-        <a class="brand" href="#dashboard" data-view-link="dashboard" aria-label="Daymark dashboard">
+        <a class="brand" href="#today" data-view-link="today" aria-label="Daymark today page">
           <span class="brand-mark"><i></i><i></i><i></i></span>
           <span><strong>daymark</strong><small>BUILD YOUR STANDARD</small></span>
         </a>
         <nav class="main-nav" aria-label="Main navigation">
-          <button class="nav-item active" data-view="dashboard"><span data-icon="dashboard"></span><span>Dashboard</span></button>
-          <button class="nav-item" data-view="today"><span data-icon="today"></span><span>Today</span></button>
-          <button class="nav-item" data-view="cycle"><span data-icon="cycle"></span><span>28-day cycle</span></button>
-          <button class="nav-item" data-view="history"><span data-icon="history"></span><span>History</span></button>
+          <button class="nav-item active" data-view="today"><span data-icon="today"></span><span>Today</span></button>
+          <button class="nav-item" data-view="dashboard"><span data-icon="dashboard"></span><span>Dashboard</span></button>
+          <button class="nav-item" data-view="cycle"><span data-icon="shield"></span><span>Semen retention</span></button>
+          <button class="nav-item" data-view="history"><span data-icon="scale"></span><span>Weight management</span></button>
           <button class="nav-item" data-view="settings"><span data-icon="settings"></span><span>Settings</span></button>
         </nav>
         <section class="sidebar-cycle" id="sidebarCycle" aria-label="Current cycle"></section>
@@ -34,7 +34,7 @@
       </aside>
 
       <header class="mobile-bar">
-        <a class="brand compact" href="#dashboard" data-view-link="dashboard" aria-label="Daymark dashboard">
+        <a class="brand compact" href="#today" data-view-link="today" aria-label="Daymark today page">
           <span class="brand-mark"><i></i><i></i><i></i></span><strong>daymark</strong>
         </a>
         <div class="mobile-actions">
@@ -44,18 +44,18 @@
       </header>
 
       <main id="mainContent" tabindex="-1">
-        <section class="view active" id="dashboardView" aria-label="Dashboard"><div id="dashboardContent"></div></section>
-        <section class="view" id="todayView" aria-label="Daily checklist"><div id="todayContent"></div></section>
-        <section class="view" id="cycleView" aria-label="28-day cycle"><div id="cycleContent"></div></section>
-        <section class="view" id="historyView" aria-label="Cycle history"><div id="historyContent"></div></section>
+        <section class="view" id="dashboardView" aria-label="Dashboard"><div id="dashboardContent"></div></section>
+        <section class="view active" id="todayView" aria-label="Daily checklist"><div id="todayContent"></div></section>
+        <section class="view" id="cycleView" aria-label="Semen retention"><div id="cycleContent"></div></section>
+        <section class="view" id="historyView" aria-label="Weight management"><div id="historyContent"></div></section>
         <section class="view" id="settingsView" aria-label="Settings"><div id="settingsContent"></div></section>
       </main>
 
       <nav class="mobile-nav" aria-label="Mobile navigation">
-        <button class="nav-item active" data-view="dashboard"><span data-icon="dashboard"></span><span>Home</span></button>
-        <button class="nav-item" data-view="today"><span data-icon="today"></span><span>Today</span></button>
-        <button class="nav-item" data-view="cycle"><span data-icon="cycle"></span><span>Cycle</span></button>
-        <button class="nav-item" data-view="history"><span data-icon="history"></span><span>History</span></button>
+        <button class="nav-item active" data-view="today"><span data-icon="today"></span><span>Today</span></button>
+        <button class="nav-item" data-view="dashboard"><span data-icon="dashboard"></span><span>Week</span></button>
+        <button class="nav-item" data-view="cycle"><span data-icon="shield"></span><span>Retention</span></button>
+        <button class="nav-item" data-view="history"><span data-icon="scale"></span><span>Weight</span></button>
         <button class="nav-item" data-view="settings"><span data-icon="settings"></span><span>Settings</span></button>
       </nav>
     </div>
@@ -106,11 +106,11 @@
     <script>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("./service-worker.js?v=20260716-7", { scope: "./", updateViaCache: "none" })
+          navigator.serviceWorker.register("./service-worker.js?v=20260716-9", { scope: "./", updateViaCache: "none" })
             .catch(error => console.warn("Daymark offline setup", error));
         });
       }
     </script>
-    <script type="module" src="app.js?v=20260716-7"></script>
+    <script type="module" src="app.js?v=20260716-9"></script>
   </body>
 </html>

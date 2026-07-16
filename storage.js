@@ -10,7 +10,7 @@ export function createInitialState() {
   return {
     version:3,
     settings:{
-      name:"", cycleAnchor:DEFAULT_CYCLE_START, targetWeight:null, startingWeight:null,
+      name:"", cycleAnchor:DEFAULT_CYCLE_START, targetWeight:67, startingWeight:null,
       privateLabelHidden:true, theme:"dark", celebrations:true
     },
     habits:clone(DEFAULT_HABITS), entries:{}, actionStates:{}, weights:{}, dayNotes:{}, oneTimeTasks:[], migration:{legacyMigrated:false}
@@ -59,6 +59,7 @@ function normalize(raw) {
     entries:raw.entries || {}, actionStates:raw.actionStates || {}, weights:raw.weights || {}, dayNotes:raw.dayNotes || {}, oneTimeTasks:raw.oneTimeTasks || []
   };
   normalized.settings.theme="dark";
+  if(!Number.isFinite(normalized.settings.targetWeight)) normalized.settings.targetWeight=67;
   return normalized;
 }
 

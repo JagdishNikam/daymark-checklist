@@ -8,7 +8,7 @@ import { ICON_NAMES, icon } from "./icons.js";
 
 const store = new DaymarkStore();
 let state = store.state;
-let activeView = "dashboard";
+let activeView = "today";
 let selectedDate = dateKey(new Date());
 let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cycleAnchor).index);
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
@@ -71,9 +71,8 @@ function applyTheme(){
 }
 
 function renderSidebar(){
-  const cycle=currentCycle();
-  const cycleScore=scorePeriod(state,cycle.start,cycle.end);
-  $("#sidebarCycle").innerHTML=`<p>CURRENT CYCLE</p><strong>Day ${cycle.day} of 28</strong><span>Week ${cycle.week} · ${formatRange(cycle.start,cycle.end)}</span><div class="progress-track"><div class="progress-fill" style="--value:${cycleScore.score||0}"></div></div>`;
+  const cycle=currentCycle(),week=cycleWeeks(cycle)[cycle.week-1],weekScore=scorePeriod(state,week.start,week.end);
+  $("#sidebarCycle").innerHTML=`<p>CURRENT WEEK</p><strong>Week ${cycle.week}</strong><span>${formatRange(week.start,week.end)}</span><div class="progress-track"><div class="progress-fill" style="--value:${weekScore.score||0}"></div></div>`;
 }
 
 function headerMarkup(kicker,title,subtitle,actions="",chips=""){
@@ -127,7 +126,7 @@ function compactCalendarMarkup(cycle,selected){
 }
 
 function actionMatrixMarkup(cycle){
-  const week=cycleWeeks(cycle)[cycle.week-1],dates=datesInRange(week.start,week.end);
+  const week=cycleWeeks(cycle)[dashboardWeek],dates=datesInRange(week.start,week.end);
   const rows=DASHBOARD_ACTIONS.map(action=>`<div class="matrix-action"><span class="action-symbol">${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong></div>${dates.map(date=>{const status=dashboardActionStatus(action,date);return`<div class="matrix-state ${status}" role="img" aria-label="${escapeHtml(action.label)} on ${displayDate(date)}: ${dashboardStateLabel(status)}" title="${dashboardStateLabel(status)}">${dashboardStateIcon(status)}</div>`;}).join("")}`).join("");
   return `<div class="action-matrix-scroll"><div class="action-matrix"><div class="matrix-corner">ACTION</div>${dates.map(date=>`<div class="matrix-day ${date===dateKey(new Date())?"today":""}"><strong>${displayDate(date,{weekday:"short"})}</strong><span>${displayDate(date,{day:"numeric"})}</span></div>`).join("")}${rows}</div></div>`;
 }
@@ -150,10 +149,45 @@ function dashboardScoreCardsMarkup(cycle,week){
   const today=dateKey(new Date());
   const cards=[
     {label:"Today score",meta:displayDate(today,{weekday:"short",day:"numeric"}),icon:"target",stats:dashboardActionScore(today)},
-    {label:"Week score",meta:`Week ${cycle.week}`,icon:"trend",stats:dashboardActionScore(week.start,week.end)},
+    {label:"Week score",meta:`Week ${week.number}`,icon:"trend",stats:dashboardActionScore(week.start,week.end)},
     {label:"Month score",meta:"28-day cycle",icon:"cycle",stats:dashboardActionScore(cycle.start,cycle.end)}
   ];
   return `<section class="dashboard-score-panel" aria-label="Current improvement scores">${cards.map(card=>`<article class="dashboard-score-item"><span class="dashboard-score-icon">${icon(card.icon)}</span><div><span>${escapeHtml(card.label)}</span><strong>${scoreText(card.stats.score)}</strong><small>${escapeHtml(card.meta)}</small></div></article>`).join("")}</section>`;
+}
+
+function dashboardWeekCalendarMarkup(cycle){
+  const currentWeek=Math.max(0,Math.min(3,cycle.week-1));
+  return `<nav class="dashboard-week-calendar" aria-label="Choose a week">${cycleWeeks(cycle).map((week,index)=>`<button class="${index===dashboardWeek?"active":""} ${index===currentWeek?"current":""}" data-dashboard-week="${index}" aria-current="${index===dashboardWeek?"true":"false"}"><span>Week ${week.number}</span><small>${formatRange(week.start,week.end)}</small><i aria-hidden="true"></i></button>`).join("")}</nav>`;
+}
+
+function sectionQuoteMarkup(section,quote,copy,iconName){
+  const sectionClass=section.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+  return `<header class="section-quote quote-${sectionClass}"><div><p class="kicker">${escapeHtml(section.toUpperCase())}</p><h1>${escapeHtml(quote)}</h1><p>${escapeHtml(copy)}</p></div><div class="section-quote-art" aria-hidden="true">${icon(iconName)}</div></header>`;
+}
+
+function retentionMetrics(today=new Date()){
+  const habit=state.habits.find(item=>item.id==="semen-retention");
+  if(!habit)return{current:0,longest:0,cycleCompleted:0,habit:null};
+  const todayKey=dateKey(today),keys=datesInRange(state.settings.cycleAnchor,todayKey).filter(key=>isScheduled(habit,key));
+  let longest=0,run=0;
+  keys.forEach(key=>{if(completionFraction(habit,entryFor(state,habit.id,key))===1){run++;longest=Math.max(longest,run);}else run=0;});
+  let end=keys.length-1;
+  if(keys[end]===todayKey&&completionFraction(habit,entryFor(state,habit.id,todayKey))<1)end--;
+  let current=0;
+  for(let index=end;index>=0;index--){if(completionFraction(habit,entryFor(state,habit.id,keys[index]))===1)current++;else break;}
+  const cycle=currentCycle();
+  const cycleCompleted=datesInRange(cycle.start,cycle.end).filter(key=>!isFuture(key)&&completionFraction(habit,entryFor(state,habit.id,key))===1).length;
+  return{current,longest,cycleCompleted,habit};
+}
+
+function todayCalendarMarkup(cycle){
+  const actual=currentCycle(),today=dateKey(new Date()),dates=datesInRange(cycle.start,cycle.end);
+  return `<aside class="today-calendar card"><div class="today-calendar-heading"><span>${icon("today")}</span><div><p class="kicker">CALENDAR</p><strong>${formatRange(cycle.start,cycle.end)}</strong></div></div><div class="today-calendar-labels">${["S","M","T","W","T","F","S"].map(day=>`<span>${day}</span>`).join("")}</div><div class="today-calendar-weeks">${Array.from({length:4},(_,weekIndex)=>`<div class="today-calendar-week ${cycle.index===actual.index&&weekIndex===actual.week-1?"current":""}">${dates.slice(weekIndex*7,weekIndex*7+7).map((key,index)=>`<button data-today-date="${key}" class="${key===today?"today":""} ${key===selectedDate?"selected":""}" aria-label="Open ${displayDate(key)}"><span>${parseDate(key).getDate()}</span><i></i></button>`).join("")}</div>`).join("")}</div><p class="today-calendar-note"><i></i> Current week</p></aside>`;
+}
+
+function dashboardFocusMarkup(cycle){
+  const retention=retentionMetrics(),weights=weightStats(state,cycle),target=state.settings.targetWeight??67;
+  return `<section class="dashboard-focus-grid"><button class="dashboard-focus-card retention-focus" data-view="cycle"><span class="focus-art">${icon("shield")}</span><div><p class="kicker">SEMEN RETENTION</p><h3>${retention.current} day${retention.current===1?"":"s"}</h3><p>Current streak · ${retention.cycleCompleted} maintained this cycle</p></div><span class="focus-arrow">${icon("chevron")}</span></button><button class="dashboard-focus-card weight-focus" data-view="history"><span class="focus-art">${icon("scale")}</span><div><p class="kicker">WEIGHT MANAGEMENT</p><h3>${weights.latest==null?"Not recorded":`${formatNumber(weights.latest)} kg`}</h3><p>Target ${formatNumber(target)} kg${weights.remaining==null?"":` · ${formatNumber(weights.remaining)} kg remaining`}</p></div><span class="focus-arrow">${icon("chevron")}</span></button></section>`;
 }
 
 function dailyActionCardsMarkup(date){
@@ -167,10 +201,11 @@ function dailyActionCardsMarkup(date){
 }
 
 function renderDashboard(){
-  const cycle=currentCycle(),week=cycleWeeks(cycle)[cycle.week-1];
+  const cycle=currentCycle(),week=cycleWeeks(cycle)[dashboardWeek];
   $("#dashboardContent").innerHTML=`
-    <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${cycle.week} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Discipline today.<br>Freedom tomorrow.</h1><p>Small actions. Strong identity. Exceptional life.</p></header>${dashboardScoreCardsMarkup(cycle,week)}</div>
-    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">CURRENT WEEK</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>`;
+    <div class="dashboard-top-row"><header class="visual-header"><p class="kicker">WEEK ${week.number} · ${formatRange(week.start,week.end)}</p><span class="quote-mark">“</span><h1>Rise with purpose.<br>Finish with pride.</h1><p>Every completed action is a promise kept to yourself.</p>${dashboardWeekCalendarMarkup(cycle)}</header>${dashboardScoreCardsMarkup(cycle,week)}</div>
+    <section class="card improvement-board"><div class="board-heading"><div><p class="kicker">WEEK ${week.number} OVERVIEW</p><h2>Your actions at a glance</h2><p><span class="legend-dot completed"></span> Completed <span class="legend-dot missed"></span> Not completed <span class="legend-dot na"></span> Not applicable</p></div></div>${actionMatrixMarkup(cycle)}</section>
+    ${dashboardFocusMarkup(cycle)}`;
 }
 
 function greeting(){const hour=new Date().getHours();return hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";}
@@ -205,8 +240,9 @@ function routinePreviewMarkup(date){
 function renderToday(){
   const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
   $("#todayContent").innerHTML=`
-    <div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
-    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Completed actions are highlighted in green. Previous days remain editable.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section>`;
+    ${sectionQuoteMarkup("Today","Own this day. Build the life you want.","One focused action at a time—quiet progress becomes lasting change.","sunrise")}
+    <div class="today-page-grid">${todayCalendarMarkup(cycle)}<div class="today-main-column"><div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${cycle.week} · Day ${cycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div>
+    <section class="today-actions"><div class="section-heading"><div><h2>Actions for this day</h2><p>Green is complete, red is missed, and yellow needs attention.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section></div></div>`;
 }
 function habitGroupMarkup(category,habits,date){return`<section><div class="habit-group-title">${icon(categoryIcon(category))}<span>${escapeHtml(CATEGORY_LABELS[category]||category)}</span></div><div class="habit-stack">${habits.map(h=>habitCardMarkup(h,date)).join("")}</div></section>`;}
 function habitCardMarkup(habit,date){
@@ -223,7 +259,21 @@ function habitCardMarkup(habit,date){
 function weightGroupMarkup(date){const weight=state.weights[date];return`<section><div class="habit-group-title">${icon("scale")}<span>Weight check-in</span></div><article class="habit-card" data-state="${weight?"completed":"not-scheduled"}"><div class="habit-main"><div class="habit-icon">${icon("scale")}</div><div><h3>${weight?`${formatNumber(weight.value)} kg`:"Not recorded"}</h3><p>${weight?.note?escapeHtml(weight.note):"Optional measurement · never affects score"}</p></div><button class="button" data-action="record-weight" data-date="${date}" ${isFuture(date)?"disabled":""}>${weight?"Edit":"Add"}</button></div></article></section>`;}
 function oneTimeGroupMarkup(date){const tasks=state.oneTimeTasks.filter(task=>task.date===date);if(!tasks.length)return"";return`<section><div class="habit-group-title">${icon("check")}<span>One-time tasks</span></div><div class="habit-stack">${tasks.map(task=>`<article class="habit-card" data-state="${task.completed?"completed":isFuture(date)?"upcoming":"pending"}"><div class="habit-main"><div class="habit-icon">${icon("check")}</div><div><h3>${escapeHtml(task.name)}</h3><p>${escapeHtml(task.category||"One-time")}</p></div><button class="completion-button ${task.completed?"done":""}" data-toggle-task="${task.id}" ${isFuture(date)?"disabled":""}>${task.completed?icon("check"):""}</button></div></article>`).join("")}</div></section>`;}
 
+function retentionCalendarMarkup(cycle,habit){
+  const today=dateKey(new Date());
+  return `<div class="retention-weekdays">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(day=>`<span>${day}</span>`).join("")}</div><div class="retention-calendar">${datesInRange(cycle.start,cycle.end).map((key,index)=>{const maintained=completionFraction(habit,entryFor(state,habit.id,key))===1;const stateClass=isFuture(key)?"future":maintained?"maintained":isPast(key)?"broken":"pending";return`<button class="retention-day ${stateClass} ${key===today?"today":""}" data-retention-date="${key}" ${isFuture(key)?"disabled":""} aria-label="${displayDate(key)}: ${maintained?"maintained":isPast(key)?"broken":"pending"}"><span>Day ${index+1}</span><strong>${parseDate(key).getDate()}</strong><i>${maintained?icon("check"):isPast(key)?icon("x"):""}</i></button>`;}).join("")}</div>`;
+}
+
 function renderCycle(){
+  const cycle=cycleByIndex(selectedCycleIndex),metrics=retentionMetrics(),habit=metrics.habit;
+  const cycleCompleted=habit?datesInRange(cycle.start,cycle.end).filter(key=>!isFuture(key)&&completionFraction(habit,entryFor(state,habit.id,key))===1).length:0;
+  const actions=`<div class="cycle-nav"><button data-cycle-shift="-1" ${selectedCycleIndex<=0?"disabled":""} aria-label="Previous month">${icon("arrowLeft")}</button><button data-cycle-shift="1" ${selectedCycleIndex>=currentCycle().index?"disabled":""} aria-label="Next month">${icon("arrowRight")}</button></div>`;
+  $("#cycleContent").innerHTML=`${sectionQuoteMarkup("Semen Retention","Master the moment. Strengthen your resolve.","A private record of consistency—without claims, pressure, or judgement.","shield")}
+    <section class="retention-hero"><div class="retention-hero-art">${icon("shield")}<span>${icon("check")}</span></div><div><p class="kicker">CURRENT STREAK</p><strong>${metrics.current}</strong><h2>day${metrics.current===1?"":"s"} maintained</h2><p>Longest streak: ${metrics.longest} days</p></div><div class="retention-cycle-count"><strong>${cycleCompleted}</strong><span>days maintained<br>in this calendar</span></div></section>
+    <section class="card retention-calendar-card"><div class="section-heading"><div><p class="kicker">PRIVATE CALENDAR</p><h2>${formatRange(cycle.start,cycle.end)}</h2><p>Select any completed or past day to update it.</p></div>${actions}</div>${habit?retentionCalendarMarkup(cycle,habit):`<div class="empty-state"><h2>Private goal unavailable</h2></div>`}<div class="retention-legend"><span><i class="maintained"></i> Maintained</span><span><i class="broken"></i> Streak broken</span><span><i class="pending"></i> Today pending</span></div></section>`;
+}
+
+function renderLegacyCycle(){
   const cycle=cycleByIndex(selectedCycleIndex),stats=scorePeriod(state,cycle.start,cycle.end),weeks=cycleWeeks(cycle),weights=weightStats(state,cycle),previous=selectedCycleIndex>0?weightStats(state,cycleByIndex(selectedCycleIndex-1)):null;
   const leaders=consistencyLeaders(state,cycle.start,cycle.end);
   const actions=`<div class="cycle-nav"><button data-cycle-shift="-1" ${selectedCycleIndex<=0?"disabled":""} aria-label="Previous cycle">${icon("arrowLeft")}</button><button data-cycle-shift="1" ${selectedCycleIndex>=currentCycle().index?"disabled":""} aria-label="Next cycle">${icon("arrowRight")}</button></div>`;
@@ -247,7 +297,27 @@ function weightChartMarkup(cycle){
   return`<div class="weight-chart"><svg viewBox="0 0 100 90" preserveAspectRatio="none" role="img" aria-label="Weight trend for this cycle"><line class="grid-line" x1="5" y1="8" x2="95" y2="8"/><line class="grid-line" x1="5" y1="44" x2="95" y2="44"/><line class="grid-line" x1="5" y1="80" x2="95" y2="80"/><polyline class="trend-line" points="${coords.map(p=>`${p.x},${p.y}`).join(" ")}"/>${coords.map(p=>`<circle class="point" cx="${p.x}" cy="${p.y}" r="1.8"/>`).join("")}</svg></div><div class="weight-chart-labels"><span>Day 1</span><span>Day 14</span><span>Day 28</span></div>`;
 }
 
+function weightReadingsMarkup(cycle){
+  const today=dateKey(new Date());
+  return `<div class="weight-reading-grid">${datesInRange(cycle.start,cycle.end).map((key,index)=>{const item=state.weights[key],future=isFuture(key);return`<button class="weight-reading ${item?"recorded":""} ${key===today?"today":""}" data-action="record-weight" data-date="${key}" ${future?"disabled":""}><span>Day ${index+1}</span><strong>${item?`${formatNumber(item.value)} kg`:future?"Upcoming":"Add"}</strong><small>${displayDate(key,{month:"short",day:"numeric"})}</small></button>`;}).join("")}</div>`;
+}
+
+function weightObservation(stats){
+  if(stats.values.length<2)return"Add at least two readings to reveal a neutral trend.";
+  if(Math.abs(stats.change)<.2)return"Weight has remained broadly stable during this period.";
+  return `Weight has ${stats.change<0?"decreased":"increased"} by ${formatNumber(Math.abs(stats.change))} kg during this period.`;
+}
+
 function renderHistory(){
+  const cycle=cycleByIndex(selectedCycleIndex),stats=weightStats(state,cycle),target=state.settings.targetWeight??67;
+  const actions=`<div class="cycle-nav"><button data-cycle-shift="-1" ${selectedCycleIndex<=0?"disabled":""} aria-label="Previous month">${icon("arrowLeft")}</button><button data-cycle-shift="1" ${selectedCycleIndex>=currentCycle().index?"disabled":""} aria-label="Next month">${icon("arrowRight")}</button></div>`;
+  $("#historyContent").innerHTML=`${sectionQuoteMarkup("Weight Management","Measure calmly. Adjust consistently.","The trend matters more than a single reading—record honestly and keep moving.","scale")}
+    <section class="weight-summary-grid"><article class="weight-goal-hero"><span class="weight-goal-art">${icon("scale")}</span><div><p class="kicker">LATEST WEIGHT</p><strong>${stats.latest==null?"—":formatNumber(stats.latest)}</strong><span>kg</span><p>${weightObservation(stats)}</p></div></article><article class="weight-goal-stat"><span>Target</span><strong>${formatNumber(target)} kg</strong><small>Your current goal</small></article><article class="weight-goal-stat"><span>Remaining</span><strong>${stats.latest==null?"—":formatNumber(Math.abs(stats.latest-target))} kg</strong><small>Distance to target</small></article><article class="weight-goal-stat"><span>Cycle change</span><strong>${stats.change==null?"—":`${stats.change>0?"+":""}${formatNumber(stats.change)} kg`}</strong><small>First to latest</small></article></section>
+    <section class="card weight-management-chart"><div class="section-heading"><div><p class="kicker">WEIGHT TREND</p><h2>${formatRange(cycle.start,cycle.end)}</h2><p>Daily readings are measurements and never affect habit scoring.</p></div><div class="weight-chart-actions">${actions}<button class="button" data-action="record-weight" data-date="${dateKey(new Date())}">${icon("plus")} Today</button></div></div>${weightChartMarkup(cycle)}</section>
+    <section class="card weight-daily-section"><div class="section-heading"><div><p class="kicker">DAILY READINGS</p><h2>Every day at a glance</h2><p>Select a day to add or edit its reading.</p></div></div>${weightReadingsMarkup(cycle)}</section>`;
+}
+
+function renderLegacyHistory(){
   const current=currentCycle(),cycles=Array.from({length:Math.max(1,current.index+1)},(_,i)=>cycleByIndex(i)).reverse();
   const lifetime=scorePeriod(state,state.settings.cycleAnchor,dateKey(new Date()));
   const streaks=completionStreaks(state);
@@ -257,7 +327,7 @@ function historyCardMarkup(cycle,current){const stats=scorePeriod(state,cycle.st
 
 function renderSettings(){
   const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  $("#settingsContent").innerHTML=`${headerMarkup("PREFERENCES","Make Daymark yours","Every setting is stored locally and applies to future calculations.",`<button class="button primary" data-action="quick-add">${icon("plus")} Add habit</button>`)}
+  $("#settingsContent").innerHTML=`${sectionQuoteMarkup("Settings","Design your system. Protect your consistency.","Simple settings create a routine that fits your real life.","settings")}${headerMarkup("PREFERENCES","Make Daymark yours","Every setting is stored locally and applies to future calculations.",`<button class="button primary" data-action="quick-add">${icon("plus")} Add habit</button>`)}
     <div class="settings-layout">
       <section class="card settings-section"><header><h2>Profile & cycle</h2><p>Your greeting and deterministic cycle anchor.</p></header><div class="setting-list">
         <label class="setting-row"><span><strong>Your name</strong><small>Used in the greeting</small></span><input type="text" maxlength="30" data-setting="name" value="${escapeHtml(state.settings.name)}" placeholder="Your name"/></label>
@@ -359,6 +429,7 @@ document.addEventListener("click",event=>{
   if(action==="quick-add"){openDialog("quickAddDialog");return;}if(action==="open-settings"){showView("settings");return;}if(action==="show-today"){selectedDate=event.target.closest("[data-date]")?.dataset.date||dateKey(new Date());renderToday();showView("today");return;}if(action==="record-weight"){openWeightDialog(event.target.closest("[data-date]")?.dataset.date||selectedDate);return;}if(action==="export"){exportData();return;}if(action==="import"){$("#importInput").click();return;}if(action==="reset"){if(confirm("Reset Daymark v3 data? Your legacy daymark-v1 data will remain untouched.")){store.reset();syncState();selectedCycleIndex=0;render();showToast("Daymark reset");}return;}
   const close=event.target.closest("[data-close-dialog]");if(close){closeDialog(close.dataset.closeDialog);return;}
   const dashboardDate=event.target.closest("[data-dashboard-date]");if(dashboardDate){selectedDate=dashboardDate.dataset.dashboardDate;dashboardWeek=Math.max(0,Math.min(3,cycleForDate(selectedDate,state.settings.cycleAnchor).week-1));renderDashboard();renderIconSlots($("#dashboardView"));setTimeout(()=>$("#dailyActionBoard")?.scrollIntoView({behavior:"smooth",block:"start"}),20);return;}
+  const todayDate=event.target.closest("[data-today-date]");if(todayDate){selectedDate=todayDate.dataset.todayDate;renderToday();renderIconSlots($("#todayView"));return;}
   const weekTab=event.target.closest("[data-dashboard-week]");if(weekTab){dashboardWeek=Number(weekTab.dataset.dashboardWeek);renderDashboard();renderIconSlots($("#dashboardView"));return;}
   const dashboardToggle=event.target.closest("[data-dashboard-toggle]");if(dashboardToggle){toggleDashboardAction(dashboardToggle.dataset.dashboardToggle,dashboardToggle.dataset.date);return;}
   const toggle=event.target.closest("[data-toggle-habit]");if(toggle){toggleHabit(toggle.dataset.toggleHabit,toggle.dataset.date);return;}
@@ -366,7 +437,8 @@ document.addEventListener("click",event=>{
   const select=event.target.closest("[data-select-date]");if(select){selectedDate=select.dataset.selectDate;render();showView("today");closeDialog("habitDialog");return;}
   const shift=event.target.closest("[data-shift-date]");if(shift){selectedDate=dateKey(addDays(selectedDate,Number(shift.dataset.shiftDate)));renderToday();renderIconSlots($("#todayView"));return;}
   const week=event.target.closest("[data-open-week]");if(week){const base=activeView==="cycle"?cycleByIndex(selectedCycleIndex):currentCycle();selectedDate=dateKey(addDays(base.start,Number(week.dataset.openWeek)*7));render();showView("today");return;}
-  const cycleShift=event.target.closest("[data-cycle-shift]");if(cycleShift){selectedCycleIndex+=Number(cycleShift.dataset.cycleShift);renderCycle();renderIconSlots($("#cycleView"));return;}
+  const retentionDate=event.target.closest("[data-retention-date]");if(retentionDate){toggleHabit("semen-retention",retentionDate.dataset.retentionDate);return;}
+  const cycleShift=event.target.closest("[data-cycle-shift]");if(cycleShift){selectedCycleIndex+=Number(cycleShift.dataset.cycleShift);if(activeView==="history"){renderHistory();renderIconSlots($("#historyView"));}else{renderCycle();renderIconSlots($("#cycleView"));}return;}
   const openCycle=event.target.closest("[data-open-cycle]");if(openCycle){selectedCycleIndex=Number(openCycle.dataset.openCycle);renderCycle();renderIconSlots($("#cycleView"));showView("cycle");return;}
   const habit=event.target.closest("[data-open-habit]");if(habit){showHabitDialog(habit.dataset.openHabit);return;}
   const activity=event.target.closest("[data-activity]");if(activity){const value=activity.dataset.activity||null;store.setEntry(activity.dataset.date,activity.dataset.habitId,{activity:value});syncState();render();showToast(value?`${value==="swimming"?"Swimming":"Walking"} selected`:"Evening activity cleared");return;}
@@ -400,4 +472,4 @@ $("#importInput").addEventListener("change",async event=>{const file=event.targe
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(["dashboard","today","cycle","history","settings"].includes(view))showView(view);});
 
 render();
-const initialView=location.hash.slice(1);if(["dashboard","today","cycle","history","settings"].includes(initialView))showView(initialView);
+const initialView=location.hash.slice(1);showView(["dashboard","today","cycle","history","settings"].includes(initialView)?initialView:"today");
