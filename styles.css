@@ -408,3 +408,9 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
 .pulse-day>div.pulse-ring::after{content:"";position:absolute;inset:4px;width:auto;height:auto;border-radius:50%;background:#071421;display:block;padding:0}
 .pulse-day>div.pulse-ring span{position:relative;z-index:2;display:block;color:#f3f7ff;font-size:8px;line-height:1}
 @media(max-width:760px){.pulse-day>div.pulse-ring{width:40px;height:40px}.pulse-day>div.pulse-ring::after{inset:4px}}
+
+/* Dashboard fills the available desktop canvas and uses blue week/activity accents */
+@media(min-width:920px){#dashboardView{max-width:none;width:100%}.dashboard-top-row,.dashboard-pulse-grid,.command-board{width:100%}}
+.dashboard-week-calendar button.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}
+.dashboard-week-calendar button.active small{color:#72c9eb}.dashboard-week-calendar button.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
+.habit-lane-name strong{font-size:14px;color:#73d7ff}.habit-lane-name small{font-size:8px}.habit-lane-date strong{font-size:10px;color:#c5dff0}.habit-lane-date span{font-size:9px;color:#7e9ab0}.habit-lane-day small{font-size:8px;color:#78c8e8}.habit-lane-day.completed small{color:#45c9ff}.habit-lane-day.missed small{color:#ff728b}.habit-lane-day.not-scheduled small{color:#8ca0b2}
