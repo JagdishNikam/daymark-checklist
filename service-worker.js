@@ -1,5 +1,5 @@
-const CACHE = "daymark-v64-compact-hero";
-const VERSION = "20260717-22";
+const CACHE = "daymark-v65-task-progress";
+const VERSION = "20260717-23";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
