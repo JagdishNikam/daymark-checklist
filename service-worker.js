@@ -1,5 +1,5 @@
-const CACHE = "daymark-v58-dashboard-cell-hover";
-const VERSION = "20260717-16";
+const CACHE = "daymark-v59-today-cyan-focus";
+const VERSION = "20260717-17";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
