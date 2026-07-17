@@ -287,7 +287,7 @@ function todayMissionPanel(date){
   const completedActions=DASHBOARD_ACTIONS.filter(action=>dashboardActionStatus(action,date)==="completed").length;
   const taskPercent=Math.round(completedActions/DASHBOARD_ACTIONS.length*100);
   const streaks=DASHBOARD_ACTIONS.slice(0,8).map(action=>todayActionStreakMarkup(action)).join("");
-  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${score}"><div><strong>${score}</strong><span>/100</span></div></div><p class="today-ring-caption">${score>=75?"Keep the momentum.":score>=40?"Build the next win.":"Start with one action."}</p><p class="today-task-progress"><strong>${completedActions} / ${DASHBOARD_ACTIONS.length}</strong><span>tasks completed · ${taskPercent}%</span></p><div class="today-mission-streaks">${streaks}</div></aside>`;
+  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${taskPercent}"><div><strong>${taskPercent}</strong><span>%</span></div></div><p class="today-ring-caption">ACTION COMPLETED</p><div class="today-mission-streaks">${streaks}</div></aside>`;
 }
 function todayActionStreakMarkup(action){const streak=dashboardActionStreak(action);return `<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${streak} day${streak===1?"":"s"}</em></div>`;}
 function todayUpcomingPanel(date){
