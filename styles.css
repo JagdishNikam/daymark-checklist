@@ -454,6 +454,19 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #todayContent .today-timeline-panel .daily-action-card::after{left:-44px}
   #todayContent .today-timeline-panel .daily-action-card h3{color:#f3f7ff;font-size:13px}
   #todayContent .today-timeline-panel .daily-action-card p{font-size:8px}
+  /* Attached focus-card theme applied consistently to every Today action. */
+  #todayContent .today-timeline-panel .daily-action-card,
+  #todayContent .today-timeline-panel .daily-action-card.completed,
+  #todayContent .today-timeline-panel .daily-action-card.missed,
+  #todayContent .today-timeline-panel .daily-action-card.pending,
+  #todayContent .today-timeline-panel .daily-action-card.not-scheduled{background:linear-gradient(145deg,#071a2a 0%,#061321 72%,#050d18 100%);border:1px solid rgba(155,92,255,.82);box-shadow:0 12px 28px rgba(0,0,0,.38),0 0 18px rgba(155,92,255,.12)}
+  #todayContent .today-timeline-panel .daily-action-card:hover{border-color:#b78cff;box-shadow:0 14px 30px rgba(0,0,0,.44),0 0 24px rgba(155,92,255,.3)}
+  #todayContent .today-timeline-panel .daily-action-card::before{background:#9b5cff;box-shadow:0 0 12px rgba(155,92,255,.45)}
+  #todayContent .today-timeline-panel .daily-action-icon{width:38px;height:38px;border-radius:12px;border:1px solid #176184;background:#071a2a;color:#45c9ff;box-shadow:inset 0 0 14px rgba(69,201,255,.08),0 0 10px rgba(69,201,255,.08)}
+  #todayContent .today-timeline-panel .daily-action-card h3{color:#f3f7ff}
+  #todayContent .today-timeline-panel .daily-action-card.completed p{color:#00e6d2}
+  #todayContent .today-timeline-panel .daily-action-card.missed p{color:#ff5d78}
+  #todayContent .today-timeline-panel .daily-action-card.pending p,#todayContent .today-timeline-panel .daily-action-card.not-scheduled p{color:#f5c45d}
 @media(max-width:1100px){.today-upcoming-panel{max-height:none}.today-action-streak{min-height:40px}}
 .command-board .board-heading h2{font-size:18px}.dashboard-week-calendar button.current,.dashboard-week-calendar button.current.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}.dashboard-week-calendar button.current small,.dashboard-week-calendar button.current.active small{color:#72c9eb}.dashboard-week-calendar button.current i,.dashboard-week-calendar button.current.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
 .main-nav .nav-item,.mobile-nav .nav-item{font-size:13px;color:#45c9ff}.main-nav .nav-item:hover,.mobile-nav .nav-item:hover{color:#b9efff}.main-nav .nav-item.active,.mobile-nav .nav-item.active{color:#b9efff}
