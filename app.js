@@ -120,10 +120,9 @@ function dashboardActionStatus(action,date){
 
 function dashboardStateIcon(status){
   if(["upcoming","pending"].includes(status))return"";
-  if(status==="not-scheduled")return`<span class="status-glyph na-mark" aria-hidden="true">N/A</span>`;
-  return `<span class="status-glyph">${icon(status==="completed"?"check":status==="missed"?"x":"clock")}</span>`;
+  return `<span class="status-glyph">${icon(status==="completed"?"check":status==="partial"?"clock":"x")}</span>`;
 }
-function dashboardStateLabel(status){return status==="not-scheduled"?"Not applicable":status==="missed"?"Not completed":stateLabel(status);}
+function dashboardStateLabel(status){return status==="upcoming"?"Upcoming":status==="completed"?"Completed":"Not completed";}
 
 function compactCalendarMarkup(cycle,selected){
   return `<div class="compact-calendar-labels">${["S","M","T","W","T","F","S"].map(day=>`<span>${day}</span>`).join("")}</div><div class="compact-calendar-grid">${datesInRange(cycle.start,cycle.end).map((date,index)=>{
@@ -241,7 +240,7 @@ function dailyActionCardsMarkup(date){
     const selected=action.activity&&status==="completed"?(entry.activity||""):(saved||(status==="completed"?"completed":status==="missed"?"missed":status==="not-scheduled"?"not-applicable":""));
     const options=action.activity?[["","Choose status"],["swimming","Completed · Swimming"],["walking","Completed · Walking"],["missed","Not completed"],["not-applicable","Not applicable"]]:[["","Choose status"],["completed","Completed"],["missed","Not completed"],["not-applicable","Not applicable"]];
     const filteredOptions=options.filter(([value])=>["completed","missed","swimming","walking"].includes(value));
-    const control=future?`<span class="action-upcoming-label">Upcoming</span>`:status==="not-scheduled"?`<span class="action-upcoming-label">Not applicable</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}: ${escapeHtml(action.label)}" ${status==="completed"?"disabled":""}>${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${filteredOptions.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
+    const control=future?`<span class="action-upcoming-label">Upcoming</span>`:today?`<button class="current-complete-button ${status==="completed"?"done":""}" data-action-complete="${action.key}" data-date="${date}" aria-label="${status==="completed"?"Completed":"Mark complete"}">${icon("statusComplete")}<span>${status==="completed"?"Completed":"Complete"}</span></button>`:`<select class="action-status-select ${status}" data-action-status="${action.key}" data-date="${date}" aria-label="Status for ${escapeHtml(action.label)}">${filteredOptions.map(([value,label])=>`<option value="${value}" ${selected===value?"selected":""}>${label}</option>`).join("")}</select>`;
     return `<article class="daily-action-card ${status} group-${action.group}"><div class="daily-action-icon">${icon(action.icon)}</div><div><h3>${escapeHtml(action.label)}</h3><p>${dashboardStateLabel(status)}</p></div>${control}</article>`;
   }).join("");
 }
