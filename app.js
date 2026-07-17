@@ -285,12 +285,12 @@ function todayMissionPanel(date){
   const stats=scoreDay(state,date),score=stats.score??0,total=stats.completed+stats.missed+stats.partial+stats.pending;
   const validActions=DASHBOARD_ACTIONS.filter(action=>["completed","not-scheduled"].includes(dashboardActionStatus(action,date))).length;
   const taskPercent=Math.round(validActions/DASHBOARD_ACTIONS.length*100);
-  const streaks=DASHBOARD_ACTIONS.slice(0,8).map(action=>todayActionStreakMarkup(action)).join("");
+  const streaks=DASHBOARD_ACTIONS.slice(0,9).map(action=>todayActionStreakMarkup(action)).join("");
   return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${taskPercent}"><div><strong>${validActions} / ${DASHBOARD_ACTIONS.length}</strong><span>actions</span></div></div><p class="today-ring-caption">ACTION COMPLETED</p><div class="today-mission-streaks">${streaks}</div></aside>`;
 }
 function todayActionStreakMarkup(action){const streak=dashboardActionStreak(action);return `<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${streak} day${streak===1?"":"s"}</em></div>`;}
 function todayUpcomingPanel(date){
-  return `<aside class="today-upcoming-panel"><p class="kicker">ACTION STREAKS</p><p class="today-streak-intro">N/A days stay neutral and never break a streak.</p>${DASHBOARD_ACTIONS.slice(8).map(action=>todayActionStreakMarkup(action)).join("")}</aside>`;
+  return `<aside class="today-upcoming-panel"><p class="kicker">ACTION STREAKS</p><p class="today-streak-intro">Valid continuity is preserved across every day.</p>${DASHBOARD_ACTIONS.slice(9).map(action=>todayActionStreakMarkup(action)).join("")}</aside>`;
 }
 function renderToday(){
   const missionCycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
