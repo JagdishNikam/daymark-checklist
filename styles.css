@@ -492,13 +492,13 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #dashboardContent .habit-lane-date strong{font-size:11px}
   /* Compact dashboard hero/focus strip. */
   #dashboardContent .dashboard-top-row{align-items:start}
-  #dashboardContent .dashboard-top-row .visual-header{height:170px;min-height:0;padding:14px 24px 10px;overflow:hidden}
+  #dashboardContent .dashboard-top-row .visual-header{height:194px;min-height:0;padding:14px 24px 10px;overflow:hidden}
   #dashboardContent .dashboard-top-row .visual-header h1{font-size:30px;line-height:.96;margin-bottom:7px}
   #dashboardContent .dashboard-top-row .visual-header>p:last-child{font-size:9px}
   #dashboardContent .dashboard-week-calendar{margin-top:8px}
   #dashboardContent .dashboard-week-calendar button{padding:6px 8px}
-  #dashboardContent .dashboard-top-row>.dashboard-focus-grid{align-self:start;height:170px;grid-template-columns:1fr 1fr;gap:10px}
-  #dashboardContent .dashboard-top-row .dashboard-focus-card{height:170px;min-height:0;padding:12px;grid-template-columns:42px minmax(0,1fr) 16px;gap:9px}
+  #dashboardContent .dashboard-top-row>.dashboard-focus-grid{align-self:start;height:194px;grid-template-columns:1fr 1fr;gap:10px}
+  #dashboardContent .dashboard-top-row .dashboard-focus-card{height:194px;min-height:0;padding:12px;grid-template-columns:42px minmax(0,1fr) 16px;gap:9px}
   #dashboardContent .dashboard-top-row .focus-art{width:40px;height:40px;border-radius:12px}
   #dashboardContent .dashboard-top-row .focus-art .icon{width:20px;height:20px}
   #dashboardContent .dashboard-top-row .dashboard-focus-card h3{font-size:18px}
