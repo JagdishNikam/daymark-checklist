@@ -1,5 +1,5 @@
-const CACHE = "daymark-v44-sixteen-actions";
-const VERSION = "20260717-02";
+const CACHE = "daymark-v45-compact-hover-cards";
+const VERSION = "20260717-03";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
