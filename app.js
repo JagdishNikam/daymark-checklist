@@ -8,7 +8,7 @@ import { ICON_NAMES, icon } from "./icons.js";
 
 const store = new DaymarkStore();
 let state = store.state;
-let activeView = "today";
+let activeView = "dashboard";
 let selectedDate = dateKey(new Date());
 let selectedCycleIndex = Math.max(0, cycleForDate(new Date(), state.settings.cycleAnchor).index);
 let dashboardWeek = Math.max(0, Math.min(3, cycleForDate(new Date(), state.settings.cycleAnchor).week-1));
@@ -282,15 +282,18 @@ function routinePreviewMarkup(date){
 
 function todayMissionPanel(date){
   const stats=scoreDay(state,date),score=stats.score??0,total=stats.completed+stats.missed+stats.partial+stats.pending;
-  const completion=total?Math.round(stats.completed/total*100):0;
-  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${score}"><div><strong>${score}</strong><span>/100</span></div></div><p class="today-ring-caption">${score>=75?"Keep the momentum.":score>=40?"Build the next win.":"Start with one action."}</p><div class="today-completion-ring" style="--value:${completion}"><div><strong>${stats.completed}</strong><span>/${total||0}</span></div></div><p class="today-completion-label">ACTIONS COMPLETED</p></aside>`;
+  const streaks=DASHBOARD_ACTIONS.slice(0,8).map(action=>todayActionStreakMarkup(action)).join("");
+  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${score}"><div><strong>${score}</strong><span>/100</span></div></div><p class="today-ring-caption">${score>=75?"Keep the momentum.":score>=40?"Build the next win.":"Start with one action."}</p><div class="today-mission-streaks">${streaks}</div></aside>`;
 }
+function todayActionStreakMarkup(action){const streak=dashboardActionStreak(action);return `<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${streak} day${streak===1?"":"s"}</em></div>`;}
 function todayUpcomingPanel(date){
-  return `<aside class="today-upcoming-panel"><p class="kicker">ACTION STREAKS</p><p class="today-streak-intro">N/A days stay neutral and never break a streak.</p>${DASHBOARD_ACTIONS.map(action=>`<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${dashboardActionStreak(action)} day${dashboardActionStreak(action)===1?"":"s"}</em></div>`).join("")}</aside>`;
+  return `<aside class="today-upcoming-panel"><p class="kicker">ACTION STREAKS</p><p class="today-streak-intro">N/A days stay neutral and never break a streak.</p>${DASHBOARD_ACTIONS.slice(8).map(action=>todayActionStreakMarkup(action)).join("")}</aside>`;
 }
 function renderToday(){
   const missionCycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
   $("#todayContent").innerHTML=`<div class="today-mission-layout">${todayMissionPanel(selectedDate)}<main class="today-timeline-panel"><div class="date-switcher"><button data-shift-date="-1" aria-label="Previous day">${icon("arrowLeft")}</button><div><strong>${displayDate(selectedDate,{weekday:"long",month:"short",day:"numeric"})}</strong><span>Week ${missionCycle.week} Â· Day ${missionCycle.day} of 28</span></div><button data-shift-date="1" aria-label="Next day">${icon("arrowRight")}</button></div><section class="today-actions"><div class="section-heading"><div><p class="kicker">DAILY TIMELINE</p><h2>Actions for this day</h2><p>Complete or mark missed. Rest-day N/A never breaks a streak.</p></div></div><div class="daily-action-grid today-action-grid">${dailyActionCardsMarkup(selectedDate)}</div></section></main>${todayUpcomingPanel(selectedDate)}</div>`;
+  // Today controls remain editable so a completion can be corrected later.
+  $("#todayContent").querySelectorAll(".current-complete-button").forEach(button=>button.disabled=false);
   return;
   const cycle=cycleForDate(selectedDate,state.settings.cycleAnchor);
   $("#todayContent").innerHTML=`
@@ -475,7 +478,7 @@ function submitWeight(event){event.preventDefault();try{const value=Number($("#w
 function exportData(){const blob=new Blob([store.export()],{type:"application/json"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download=`daymark-backup-${dateKey(new Date())}.json`;link.click();URL.revokeObjectURL(link.href);showToast("Backup exported");}
 
 document.addEventListener("click",event=>{
-  const actionComplete=event.target.closest("[data-action-complete]");if(actionComplete){applyActionStatus(actionComplete.dataset.actionComplete,actionComplete.dataset.date,"completed");return;}
+  const actionComplete=event.target.closest("[data-action-complete]");if(actionComplete){const action=DASHBOARD_ACTIONS.find(item=>item.key===actionComplete.dataset.actionComplete),current=action?dashboardActionStatus(action,actionComplete.dataset.date):"pending";applyActionStatus(actionComplete.dataset.actionComplete,actionComplete.dataset.date,current==="completed"?"missed":"completed");return;}
   const nav=event.target.closest("[data-view]");if(nav){showView(nav.dataset.view);return;}
   const viewLink=event.target.closest("[data-view-link]");if(viewLink){event.preventDefault();showView(viewLink.dataset.viewLink);return;}
   const action=event.target.closest("[data-action]")?.dataset.action;
@@ -525,4 +528,4 @@ $("#importInput").addEventListener("change",async event=>{const file=event.targe
 window.addEventListener("hashchange",()=>{const view=location.hash.slice(1);if(["dashboard","today","cycle","history","settings"].includes(view))showView(view);});
 
 render();
-const initialView=location.hash.slice(1);showView(["dashboard","today","cycle","history","settings"].includes(initialView)?initialView:"today");
+const initialView=location.hash.slice(1);showView(["dashboard","today","cycle","history","settings"].includes(initialView)?initialView:"dashboard");
