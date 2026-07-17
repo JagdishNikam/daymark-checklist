@@ -505,6 +505,18 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #todayContent .today-upcoming-panel .today-action-streak>span{width:44px;height:44px}
   #todayContent .today-upcoming-panel .today-action-streak>span .icon{width:23px;height:23px}
   #todayContent .today-upcoming-panel .today-action-streak strong{font-size:11px}
+  /* Larger, evenly sized streak tiles for both side panels. */
+  #todayContent .today-mission-streaks{grid-auto-rows:88px;gap:8px}
+  #todayContent .today-mission-panel .today-action-streak,
+  #todayContent .today-upcoming-panel .today-action-streak{height:88px;min-height:88px;box-sizing:border-box;padding:12px 9px;border:1px solid #193c55;border-radius:12px;background:linear-gradient(145deg,#081a2a,#050e19)}
+  #todayContent .today-mission-panel .today-action-streak>span,
+  #todayContent .today-upcoming-panel .today-action-streak>span{width:50px;height:50px;border-radius:14px;border-color:#176184;background:#071a2a}
+  #todayContent .today-mission-panel .today-action-streak>span .icon,
+  #todayContent .today-upcoming-panel .today-action-streak>span .icon{width:25px;height:25px}
+  #todayContent .today-mission-panel .today-action-streak strong,
+  #todayContent .today-upcoming-panel .today-action-streak strong{font-size:11px;line-height:1.2}
+  #todayContent .today-mission-panel .today-action-streak em,
+  #todayContent .today-upcoming-panel .today-action-streak em{font-size:10px}
   @media(max-width:1100px){#todayContent .today-mission-layout{grid-template-columns:250px minmax(0,1fr);min-height:0}#todayContent .today-mission-panel,#todayContent .today-upcoming-panel,#todayContent .today-timeline-panel{height:auto;min-height:700px}#todayContent .today-upcoming-panel{grid-column:1/-1}}
   @media(max-width:760px){#todayContent .today-mission-layout{grid-template-columns:1fr}#todayContent .today-mission-panel,#todayContent .today-upcoming-panel,#todayContent .today-timeline-panel{height:auto;min-height:0}#todayContent .today-timeline-panel .today-action-grid{max-height:680px}}
   /* Compact dashboard lanes so more actions remain visible at once. */
@@ -535,6 +547,8 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #dashboardContent .heat-day:hover:not(:disabled),
   #dashboardContent .matrix-day:hover{border-color:#45c9ff!important;background:rgba(69,201,255,.12);color:#e6fbff;box-shadow:inset 0 0 0 1px #45c9ff,0 0 18px rgba(69,201,255,.2);transform:translateY(-2px)}
   #dashboardContent .dashboard-week-calendar button:hover i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
+  #todayContent .today-momentum-ring strong{font-size:30px;letter-spacing:-.8px;white-space:nowrap}
+  #todayContent .today-momentum-ring span{font-size:10px;text-transform:uppercase;letter-spacing:1px}
 @media(max-width:1100px){.today-upcoming-panel{max-height:none}.today-action-streak{min-height:40px}}
 .command-board .board-heading h2{font-size:18px}.dashboard-week-calendar button.current,.dashboard-week-calendar button.current.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}.dashboard-week-calendar button.current small,.dashboard-week-calendar button.current.active small{color:#72c9eb}.dashboard-week-calendar button.current i,.dashboard-week-calendar button.current.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
 .main-nav .nav-item,.mobile-nav .nav-item{font-size:13px;color:#45c9ff}.main-nav .nav-item:hover,.mobile-nav .nav-item:hover{color:#b9efff}.main-nav .nav-item.active,.mobile-nav .nav-item.active{color:#b9efff}

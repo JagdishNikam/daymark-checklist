@@ -205,9 +205,9 @@ function dashboardActionStreak(action){
   let streak=0;
   for(const key of keys){
     const status=dashboardActionStatus(action,key);
-    if(status==="not-scheduled"||status==="upcoming")continue;
+    if(status==="upcoming")continue;
     if(key===today&&["pending","partial"].includes(status))continue;
-    if(status==="completed")streak++;
+    if(status==="completed"||status==="not-scheduled")streak++;
     else break;
   }
   return streak;
@@ -284,10 +284,10 @@ function routinePreviewMarkup(date){
 
 function todayMissionPanel(date){
   const stats=scoreDay(state,date),score=stats.score??0,total=stats.completed+stats.missed+stats.partial+stats.pending;
-  const completedActions=DASHBOARD_ACTIONS.filter(action=>dashboardActionStatus(action,date)==="completed").length;
-  const taskPercent=Math.round(completedActions/DASHBOARD_ACTIONS.length*100);
+  const validActions=DASHBOARD_ACTIONS.filter(action=>["completed","not-scheduled"].includes(dashboardActionStatus(action,date))).length;
+  const taskPercent=Math.round(validActions/DASHBOARD_ACTIONS.length*100);
   const streaks=DASHBOARD_ACTIONS.slice(0,8).map(action=>todayActionStreakMarkup(action)).join("");
-  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${taskPercent}"><div><strong>${taskPercent}</strong><span>%</span></div></div><p class="today-ring-caption">ACTION COMPLETED</p><div class="today-mission-streaks">${streaks}</div></aside>`;
+  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${taskPercent}"><div><strong>${validActions} / ${DASHBOARD_ACTIONS.length}</strong><span>actions</span></div></div><p class="today-ring-caption">ACTION COMPLETED</p><div class="today-mission-streaks">${streaks}</div></aside>`;
 }
 function todayActionStreakMarkup(action){const streak=dashboardActionStreak(action);return `<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${streak} day${streak===1?"":"s"}</em></div>`;}
 function todayUpcomingPanel(date){
