@@ -33,7 +33,9 @@ const DASHBOARD_ACTIONS = [
   {key:"water-bath",label:"Water Storage - Bath",habitId:"water-storage-bath",icon:"drop",group:"wellness"}
 ];
 
+// Keep the Today action wording aligned with the personal routine list.
 DASHBOARD_ACTIONS[0].label = "Wake up at 6:30 to 7:30";
+
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];

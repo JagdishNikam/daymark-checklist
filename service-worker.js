@@ -1,5 +1,5 @@
-const CACHE = "daymark-v52-today-timeline-streaks";
-const VERSION = "20260717-10";
+const CACHE = "daymark-v53-today-actions";
+const VERSION = "20260717-11";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
