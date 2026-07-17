@@ -280,7 +280,8 @@ function routinePreviewMarkup(date){
 
 function todayMissionPanel(date){
   const stats=scoreDay(state,date),score=stats.score??0,total=stats.completed+stats.missed+stats.partial+stats.pending;
-  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${score}"><div><strong>${score}</strong><span>/100</span></div></div><p class="today-ring-caption">${score>=75?"Keep the momentum.":score>=40?"Build the next win.":"Start with one action."}</p><div class="today-completion-block"><span>COMPLETED ACTIONS</span><strong>${stats.completed}</strong><small>of ${total||0} eligible</small><div class="progress-track"><div class="progress-fill" style="--value:${total?Math.round(stats.completed/total*100):0}"></div></div></div></aside>`;
+  const completion=total?Math.round(stats.completed/total*100):0;
+  return `<aside class="today-mission-panel"><p class="kicker">MISSION CONTROL</p><h2>Own this day</h2><div class="today-momentum-ring" style="--value:${score}"><div><strong>${score}</strong><span>/100</span></div></div><p class="today-ring-caption">${score>=75?"Keep the momentum.":score>=40?"Build the next win.":"Start with one action."}</p><div class="today-completion-ring" style="--value:${completion}"><div><strong>${stats.completed}</strong><span>/${total||0}</span></div></div><p class="today-completion-label">ACTIONS COMPLETED</p></aside>`;
 }
 function todayUpcomingPanel(date){
   return `<aside class="today-upcoming-panel"><p class="kicker">ACTION STREAKS</p><p class="today-streak-intro">N/A days stay neutral and never break a streak.</p>${DASHBOARD_ACTIONS.map(action=>`<div class="today-action-streak"><span>${icon(action.icon)}</span><strong>${escapeHtml(action.label)}</strong><em>${dashboardActionStreak(action)} day${dashboardActionStreak(action)===1?"":"s"}</em></div>`).join("")}</aside>`;
