@@ -17,18 +17,23 @@ let inputTimer;
 const DASHBOARD_ACTIONS = [
   {key:"wake",label:"Wake up between 6:30–7:00 AM",habitId:"wake-630",icon:"sunrise",group:"morning",timeLabel:"6:30–7:00 AM"},
   {key:"coffee",label:"Black coffee",habitId:"black-coffee",icon:"coffee",group:"morning"},
-  {key:"temple",label:"Go to temple",habitId:"temple-ritual",subtaskIds:["visited"],icon:"temple",group:"spiritual"},
-  {key:"gajara",label:"Offer Gajra to Goddess Parvati",habitId:"temple-ritual",subtaskIds:["parvati-gajra"],icon:"spark",group:"spiritual"},
-  {key:"devpuja",label:"Dev Puja at home",habitId:"dev-puja",icon:"spark",group:"spiritual"},
-  {key:"amla",label:"Amla juice",habitId:"avla-drink",icon:"leaf",group:"nutrition"},
-  {key:"beetroot",label:"Beetroot juice",habitId:"beetroot-juice",icon:"drop",group:"nutrition"},
-  {key:"paneer",label:"Protein lunch",habitId:"protein-lunch",icon:"utensils",group:"nutrition"},
-  {key:"protein-dinner",label:"Protein dinner",habitId:"protein-dinner",icon:"bowl",group:"nutrition"},
-  {key:"water-1",label:"Water intake 1",habitId:"water-intake-1",icon:"drop",group:"nutrition"},
-  {key:"water-2",label:"Water intake 2",habitId:"water-intake-2",icon:"drop",group:"nutrition"},
-  {key:"hair-care",label:"Hair care",habitId:"hair-care",icon:"hair",group:"care"},
-  {key:"physio",label:"Back physiotherapy",habitId:"back-physio",icon:"physio",group:"care"}
+  {key:"temple",label:"Temple",habitId:"temple-ritual",subtaskIds:["visited"],icon:"temple",group:"spiritual"},
+  {key:"gajara",label:"Gajra Offering",habitId:"temple-ritual",subtaskIds:["parvati-gajra"],icon:"spark",group:"spiritual"},
+  {key:"physio",label:"Back Physiotherapy",habitId:"back-physio",icon:"physio",group:"wellness"},
+  {key:"workout",label:"Workout",habitId:"workout",icon:"dumbbell",group:"fitness"},
+  {key:"kegel-1",label:"Kegel 1",habitId:"kegel",subtaskIds:["morning"],icon:"activity",group:"wellness"},
+  {key:"devpuja",label:"Dev Puja",habitId:"dev-puja",icon:"spark",group:"spiritual"},
+  {key:"salesforce",label:"Salesforce Training",habitId:"learning",icon:"book",group:"learning"},
+  {key:"kegel-2",label:"Kegel",habitId:"kegel",subtaskIds:["evening"],icon:"activity",group:"wellness"},
+  {key:"water",label:"Water Intake",habitId:"water-intake-1",icon:"drop",group:"wellness"},
+  {key:"amla",label:"Aavla Juice",habitId:"avla-drink",icon:"leaf",group:"nutrition"},
+  {key:"diya",label:"Diva",habitId:"diya",icon:"spark",group:"spiritual"},
+  {key:"beetroot",label:"Beetroot Juice",habitId:"beetroot-juice",icon:"drop",group:"nutrition"},
+  {key:"hair-care",label:"Hair - Skin care",habitId:"hair-care",icon:"hair",group:"wellness"},
+  {key:"water-bath",label:"Water Storage - Bath",habitId:"water-storage-bath",icon:"drop",group:"wellness"}
 ];
+
+DASHBOARD_ACTIONS[0].label = "Wake up at 6:30 to 7:30";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];

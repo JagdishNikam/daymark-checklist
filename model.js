@@ -3,7 +3,7 @@ export const CYCLE_LENGTH = 28;
 export const DEFAULT_CYCLE_START = "2026-07-12";
 
 export const DEFAULT_HABITS = [
-  { id:"wake-630", name:"Wake up by 6:30 AM", category:"morning", icon:"sunrise", schedule:[1,2,3,4,5,6], time:"06:30", points:10, type:"boolean", active:true },
+  { id:"wake-630", name:"Wake up at 6:30 to 7:30", category:"morning", icon:"sunrise", schedule:[1,2,3,4,5,6], time:"06:30", points:10, type:"boolean", active:true },
   { id:"temple-ritual", name:"Temple Ritual", category:"spiritual", icon:"temple", schedule:[0,1,2,3,4,5,6], time:"07:00", points:10, type:"subtasks", active:true, subtasks:[
     { id:"visited", name:"Temple visited" },
     { id:"shiva-water", name:"Water offered to Lord Shiva" },
@@ -25,11 +25,13 @@ export const DEFAULT_HABITS = [
   { id:"beetroot-juice", name:"Beetroot juice", category:"nutrition", icon:"drop", schedule:[1,2,3,4,5,6], time:"16:30", points:4, type:"boolean", active:true },
   { id:"water-intake-1", name:"Water intake 1", category:"nutrition", icon:"drop", schedule:[0,1,2,3,4,5,6], time:"12:00", points:3, type:"boolean", active:true },
   { id:"water-intake-2", name:"Water intake 2", category:"nutrition", icon:"drop", schedule:[0,1,2,3,4,5,6], time:"18:00", points:3, type:"boolean", active:true },
-  { id:"hair-care", name:"Hair care", category:"wellness", icon:"hair", schedule:[0,1,2,3,4,5,6], time:"21:00", points:4, type:"boolean", active:true },
-  { id:"learning", name:"One hour of self-learning", category:"learning", icon:"book", schedule:[1,2,3,4,5], time:"19:00", points:15, type:"learning", active:true },
+  { id:"hair-care", name:"Hair - Skin care", category:"wellness", icon:"hair", schedule:[0,1,2,3,4,5,6], time:"21:00", points:4, type:"boolean", active:true },
+  { id:"learning", name:"Salesforce Training", category:"learning", icon:"book", schedule:[1,2,3,4,5], time:"19:00", points:15, type:"learning", active:true },
   { id:"dev-puja", name:"Dev Puja at home", category:"spiritual", icon:"spark", schedule:[1,2,3,4,5,6], time:"18:00", points:6, type:"boolean", active:true },
   { id:"evening-activity", name:"Evening Activity", category:"fitness", icon:"footsteps", schedule:[1,2,3,4,5,6], time:"18:30", points:10, type:"activity", active:true },
-  { id:"semen-retention", name:"Semen Retention", category:"private", icon:"shield", schedule:[0,1,2,3,4,5,6], points:10, type:"boolean", active:true, private:true }
+  { id:"semen-retention", name:"Semen Retention", category:"private", icon:"shield", schedule:[0,1,2,3,4,5,6], points:10, type:"boolean", active:true, private:true },
+  { id:"diya", name:"Diva", category:"spiritual", icon:"spark", schedule:[0,1,2,3,4,5,6], points:4, type:"boolean", active:true },
+  { id:"water-storage-bath", name:"Water Storage - Bath", category:"wellness", icon:"drop", schedule:[0,1,2,3,4,5,6], points:4, type:"boolean", active:true }
 ];
 
 export const CATEGORY_LABELS = {
