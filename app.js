@@ -101,13 +101,15 @@ function getInsights(cycle){
 
 function dashboardActionStatus(action,date){
   if(isFuture(date))return"upcoming";
-  if(parseDate(date).getDay()===0&&!['temple','gajara'].includes(action.key))return"not-scheduled";
+  const sunday=parseDate(date).getDay()===0;
+  // Sunday exceptions from the routine sheet: only these four actions are N/A.
+  if(sunday&&['wake','physio','workout','salesforce'].includes(action.key))return"not-scheduled";
   const saved=state.actionStates?.[date]?.[action.key];
   if(saved==="completed")return"completed";
   if(saved==="missed")return"missed";
   if(saved==="not-applicable")return"not-scheduled";
   const habit=state.habits.find(item=>item.id===action.habitId);
-  if(!habit||!isScheduled(habit,date))return"not-scheduled";
+  if(!habit||(!sunday&&!isScheduled(habit,date)))return"not-scheduled";
   if(!action.subtaskIds)return habitState(state,habit,date);
   const subtasks=entryFor(state,habit.id,date).subtasks||{};
   const completed=action.subtaskIds.filter(id=>subtasks[id]).length;
