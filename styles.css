@@ -614,6 +614,22 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   @media(max-width:760px){#cycleContent .retention-weekdays{margin-left:0;gap:3px}#cycleContent .retention-week-row{grid-template-columns:1fr;gap:4px}#cycleContent .retention-week-label{display:flex;justify-content:space-between}#cycleContent .retention-week-days{gap:3px}#cycleContent .retention-day{height:60px;min-height:60px}#cycleContent .retention-day small{display:none}}
   @media(max-width:760px){#cycleContent .section-quote{min-height:124px;padding:19px 18px}#cycleContent .retention-hero{height:auto;min-height:150px;padding:18px}#cycleContent .retention-day{height:60px;min-height:60px}}
   /* Reference-inspired retention layout: connected calendar timeline with a right summary rail. */
+  body.retention-active .sidebar{display:none}
+  body.retention-active main{grid-column:1;padding:0 24px 40px}
+  body.retention-active .view{max-width:1500px}
+  #cycleContent .retention-screen{min-height:calc(100vh - 40px);background:#020509}
+  #cycleContent .retention-topbar{height:64px;display:flex;align-items:center;gap:36px;padding:0 18px;border-bottom:1px solid #132b3e;background:#030910}
+  #cycleContent .retention-brand{display:flex;align-items:center;gap:9px;color:#f3f7ff;text-decoration:none;min-width:145px}
+  #cycleContent .retention-brand strong{font:800 18px "Manrope"}
+  #cycleContent .retention-brand .brand-mark{width:29px;height:29px;border-radius:9px}
+  #cycleContent .retention-brand .brand-mark i{width:3px}
+  #cycleContent .retention-topbar nav{display:flex;align-items:center;gap:6px;flex:1}
+  #cycleContent .retention-topbar nav button,#cycleContent .retention-subnav button{border:0;background:transparent;color:#71869b;padding:10px 13px;font-size:10px;cursor:pointer}
+  #cycleContent .retention-topbar nav button:hover,#cycleContent .retention-topbar nav button.active{color:#00e6d2;background:rgba(0,230,210,.08);border-bottom:2px solid #00e6d2}
+  #cycleContent .retention-private{color:#71869b;font-size:8px;white-space:nowrap}
+  #cycleContent .retention-subnav{height:42px;display:flex;align-items:end;gap:8px;padding:0 18px;border-bottom:1px solid #132b3e;background:#02070d}
+  #cycleContent .retention-subnav button{padding:10px 15px 9px}
+  #cycleContent .retention-subnav button.active{color:#00e6d2;border-bottom:2px solid #00e6d2}
   #cycleContent .retention-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,.72fr);gap:14px;align-items:start}
   #cycleContent .retention-calendar-card{min-width:0}
   #cycleContent .retention-side-summary{display:grid;gap:12px;position:sticky;top:18px}
@@ -646,7 +662,8 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #cycleContent .retention-day::after{content:"";position:absolute;top:50%;right:-7px;width:7px;border-top:1px solid rgba(69,201,255,.22);z-index:-1}
   #cycleContent .retention-day:last-child::after{display:none}
   @media(max-width:900px){#cycleContent .retention-dashboard-grid{grid-template-columns:1fr}#cycleContent .retention-side-summary{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}#cycleContent .retention-update-card{grid-column:1/-1}}
-  @media(max-width:560px){#cycleContent .retention-side-summary{grid-template-columns:1fr}#cycleContent .retention-update-card{grid-column:auto}}
+  @media(max-width:900px){body.retention-active main{padding:0 12px 24px}#cycleContent .retention-topbar{gap:12px;padding:0 10px}#cycleContent .retention-topbar nav{overflow-x:auto}#cycleContent .retention-topbar nav button{white-space:nowrap;padding-inline:8px}#cycleContent .retention-brand{min-width:auto}#cycleContent .retention-private{display:none}}
+  @media(max-width:560px){#cycleContent .retention-side-summary{grid-template-columns:1fr}#cycleContent .retention-update-card{grid-column:auto}#cycleContent .retention-topbar{height:56px}#cycleContent .retention-brand strong{font-size:15px}#cycleContent .retention-topbar nav button{font-size:8px}}
 @media(max-width:1100px){.today-upcoming-panel{max-height:none}.today-action-streak{min-height:40px}}
 .command-board .board-heading h2{font-size:18px}.dashboard-week-calendar button.current,.dashboard-week-calendar button.current.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}.dashboard-week-calendar button.current small,.dashboard-week-calendar button.current.active small{color:#72c9eb}.dashboard-week-calendar button.current i,.dashboard-week-calendar button.current.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
 .main-nav .nav-item,.mobile-nav .nav-item{font-size:13px;color:#45c9ff}.main-nav .nav-item:hover,.mobile-nav .nav-item:hover{color:#b9efff}.main-nav .nav-item.active,.mobile-nav .nav-item.active{color:#b9efff}
