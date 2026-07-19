@@ -665,6 +665,24 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   @media(max-width:900px){#cycleContent .retention-dashboard-grid{grid-template-columns:1fr}#cycleContent .retention-side-summary{position:static;grid-template-columns:repeat(2,minmax(0,1fr))}#cycleContent .retention-update-card{grid-column:1/-1}}
   @media(max-width:900px){body.retention-active main{padding:0 12px 24px}#cycleContent .retention-topbar{gap:12px;padding:0 10px}#cycleContent .retention-topbar nav{overflow-x:auto}#cycleContent .retention-topbar nav button{white-space:nowrap;padding-inline:8px}#cycleContent .retention-brand{min-width:auto}#cycleContent .retention-private{display:none}}
   @media(max-width:560px){#cycleContent .retention-side-summary{grid-template-columns:1fr}#cycleContent .retention-update-card{grid-column:auto}#cycleContent .retention-topbar{height:56px}#cycleContent .retention-brand strong{font-size:15px}#cycleContent .retention-topbar nav button{font-size:8px}}
+  /* Circular day nodes and true horizontal timeline connectors from the reference. */
+  #cycleContent .retention-week-days{min-height:92px;align-items:center;gap:0}
+  #cycleContent .retention-week-days::before{top:50%;border-top:2px solid #1b4058}
+  #cycleContent .retention-day{width:48px;height:48px;min-height:48px;justify-self:center;border-radius:50%;padding:0;display:grid;place-items:center;align-content:center;gap:0;background:#061321;overflow:visible}
+  #cycleContent .retention-day::after{right:-50%;width:100%;border-top:2px solid #1b4058}
+  #cycleContent .retention-day:last-child::after{display:none}
+  #cycleContent .retention-day span{position:absolute;top:-17px;font-size:6px;color:#6f8ea5;white-space:nowrap}
+  #cycleContent .retention-day strong{font-size:15px;line-height:1;color:#b9d4e5}
+  #cycleContent .retention-day small{position:absolute;bottom:-19px;font-size:7px;white-space:nowrap;color:#6f8ea5}
+  #cycleContent .retention-day i{position:absolute;bottom:-34px;height:13px}
+  #cycleContent .retention-day i .icon{width:12px;height:12px}
+  #cycleContent .retention-day.maintained{background:#052d37;border-color:#00e6d2;box-shadow:0 0 14px rgba(0,230,210,.2)}
+  #cycleContent .retention-day.maintained strong,#cycleContent .retention-day.maintained small{color:#00e6d2}
+  #cycleContent .retention-day.broken{background:#281018;border-color:#ff5d78}
+  #cycleContent .retention-day.broken strong,#cycleContent .retention-day.broken small{color:#ff8093}
+  #cycleContent .retention-day.today{box-shadow:0 0 0 2px #fff,0 0 18px rgba(255,255,255,.18)}
+  #cycleContent .retention-day.future{background:#050d15;border-color:#1b2b3a}
+  @media(max-width:760px){#cycleContent .retention-day{width:35px;height:35px;min-height:35px}#cycleContent .retention-day strong{font-size:12px}#cycleContent .retention-day span{display:none}#cycleContent .retention-day small{font-size:6px}#cycleContent .retention-week-days{min-height:78px}}
 @media(max-width:1100px){.today-upcoming-panel{max-height:none}.today-action-streak{min-height:40px}}
 .command-board .board-heading h2{font-size:18px}.dashboard-week-calendar button.current,.dashboard-week-calendar button.current.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}.dashboard-week-calendar button.current small,.dashboard-week-calendar button.current.active small{color:#72c9eb}.dashboard-week-calendar button.current i,.dashboard-week-calendar button.current.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
 .main-nav .nav-item,.mobile-nav .nav-item{font-size:13px;color:#45c9ff}.main-nav .nav-item:hover,.mobile-nav .nav-item:hover{color:#b9efff}.main-nav .nav-item.active,.mobile-nav .nav-item.active{color:#b9efff}
