@@ -683,6 +683,9 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   #cycleContent .retention-day.today{box-shadow:0 0 0 2px #fff,0 0 18px rgba(255,255,255,.18)}
   #cycleContent .retention-day.future{background:#050d15;border-color:#1b2b3a}
   @media(max-width:760px){#cycleContent .retention-day{width:35px;height:35px;min-height:35px}#cycleContent .retention-day strong{font-size:12px}#cycleContent .retention-day span{display:none}#cycleContent .retention-day small{font-size:6px}#cycleContent .retention-week-days{min-height:78px}}
+  /* Restore the app's original vertical navigation on the retention view. */
+  #cycleContent .retention-topbar,#cycleContent .retention-subnav{display:none}
+  @media(min-width:920px){body.retention-active .app-shell{grid-template-columns:var(--sidebar) minmax(0,1fr)!important}body.retention-active .sidebar{display:flex}body.retention-active main{grid-column:2;padding:38px 48px 56px}body.retention-active .retention-screen{min-height:calc(100vh - 94px)}}
 @media(max-width:1100px){.today-upcoming-panel{max-height:none}.today-action-streak{min-height:40px}}
 .command-board .board-heading h2{font-size:18px}.dashboard-week-calendar button.current,.dashboard-week-calendar button.current.active{border-color:#45c9ff;background:rgba(69,201,255,.16);color:#b9efff;box-shadow:inset 0 -2px #45c9ff,0 0 16px rgba(69,201,255,.12)}.dashboard-week-calendar button.current small,.dashboard-week-calendar button.current.active small{color:#72c9eb}.dashboard-week-calendar button.current i,.dashboard-week-calendar button.current.active i{border-color:#45c9ff;background:#45c9ff;box-shadow:0 0 9px rgba(69,201,255,.55)}
 .main-nav .nav-item,.mobile-nav .nav-item{font-size:13px;color:#45c9ff}.main-nav .nav-item:hover,.mobile-nav .nav-item:hover{color:#b9efff}.main-nav .nav-item.active,.mobile-nav .nav-item.active{color:#b9efff}

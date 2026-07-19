@@ -1,5 +1,5 @@
-const CACHE = "daymark-v83-retention-timeline-circles";
-const VERSION = "20260717-41";
+const CACHE = "daymark-v84-vertical-navigation";
+const VERSION = "20260717-42";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
