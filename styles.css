@@ -615,6 +615,7 @@ html,body{background:#03060d;color:#f3f7ff;font-family:"DM Sans",system-ui,sans-
   @media(max-width:760px){#cycleContent .section-quote{min-height:124px;padding:19px 18px}#cycleContent .retention-hero{height:auto;min-height:150px;padding:18px}#cycleContent .retention-day{height:60px;min-height:60px}}
   /* Reference-inspired retention layout: connected calendar timeline with a right summary rail. */
   body.retention-active .sidebar{display:none}
+  body.retention-active .app-shell{grid-template-columns:minmax(0,1fr)!important}
   body.retention-active main{grid-column:1;padding:0 24px 40px}
   body.retention-active .view{max-width:1500px}
   #cycleContent .retention-screen{min-height:calc(100vh - 40px);background:#020509}
