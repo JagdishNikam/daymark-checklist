@@ -1,5 +1,5 @@
-const CACHE = "daymark-v84-vertical-navigation";
-const VERSION = "20260717-42";
+const CACHE = "daymark-v85-retention-challenges";
+const VERSION = "20260717-43";
 const ASSETS = [
   "./", "./index.html", `./styles.css?v=${VERSION}`, `./app.js?v=${VERSION}`, "./model.js", "./storage.js", "./icons.js",
   "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
